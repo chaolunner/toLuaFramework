@@ -27,6 +27,10 @@ public class LuaControlManager : MonoBehaviour
     {
         if (typeof(ILuaControl).IsAssignableFrom(control.GetType()))
         {
+            if (Instance.luaState != null)
+            {
+                (control as ILuaControl).OnStart(Instance.luaState);
+            }
             Instance.controls.Add(control as ILuaControl);
         }
         if (typeof(ILuaControlUpdate).IsAssignableFrom(control.GetType()))
@@ -70,10 +74,10 @@ public class LuaControlManager : MonoBehaviour
 
     private void Update()
     {
-        if (!LuaInstaller.IsDone) { return; }
+        if (luaState == null) { return; }
         for (int i = 0; i < controlUpdates.Count; i++)
         {
-            controlUpdates[i].OnUpdate();
+            controlUpdates[i].OnUpdate(luaState);
         }
     }
 }

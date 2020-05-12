@@ -8,7 +8,7 @@ public interface ILuaControl
 
 public interface ILuaControlUpdate
 {
-    void OnUpdate();
+    void OnUpdate(LuaState luaState);
 }
 
 public class LuaControl : MonoBehaviour, ILuaControl
