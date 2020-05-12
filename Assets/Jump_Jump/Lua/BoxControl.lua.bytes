@@ -1,0 +1,17 @@
+BoxControl = {}
+local this = BoxControl
+local boxPrefab
+
+function BoxControl:Start()
+    LuaAddressables.LoadGameObjectAsync(
+        "Jump_Jump/Box",
+        function(prefab)
+            boxPrefab = prefab
+            BoxControl:GenerateBox()
+        end
+    )
+end
+
+function BoxControl:GenerateBox()
+    local newBox = GameObject.Instantiate(boxPrefab)
+end
