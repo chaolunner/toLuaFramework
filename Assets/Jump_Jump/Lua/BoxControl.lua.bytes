@@ -1,6 +1,10 @@
 BoxControl = {}
 local this = BoxControl
 local boxPrefab
+local newBox
+local randomScale
+local minDistance = 1.5
+local maxDistance = 3
 
 function BoxControl:Start()
     LuaAddressables.LoadGameObjectAsync(
@@ -13,5 +17,11 @@ function BoxControl:Start()
 end
 
 function BoxControl:GenerateBox()
-    local newBox = GameObject.Instantiate(boxPrefab)
+    newBox = GameObject.Instantiate(boxPrefab)
+    --盒子随机位置、大小、颜色
+    randomScale = Random.Range(0.5, 1)
+    newBox.transform.position = Vector3(Random.Range(minDistance, maxDistance), 0, 0)
+    newBox.transform.localScale = Vector3(randomScale, 0.5, randomScale)
+    newBox:GetComponent("Renderer").material.color =
+        Color(Random.Range(0.0, 1.0), Random.Range(0.0, 1.0), Random.Range(0.0, 1.0))
 end

@@ -10,13 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Jump_Jump
+  m_Name: Prefabs
   m_EditorClassIdentifier: 
-  m_GroupName: Jump_Jump
+  m_GroupName: Prefabs
   m_Data:
     m_SerializedData: []
   m_GUID: f65aed406e9568941b3224136ca4e36f
   m_SerializeEntries:
+  - m_GUID: 4af276bd94cea62439f2b08bedefe764
+    m_Address: Jump_Jump/Player
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   - m_GUID: 7e4bc9bc4fa182b47beae312decbf2e1
     m_Address: Jump_Jump/Box
     m_ReadOnly: 0

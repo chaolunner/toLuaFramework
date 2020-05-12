@@ -1,0 +1,18 @@
+PlayerControl = {}
+local this = PlayerControl
+local playerPrefab
+local player
+
+function PlayerControl:Start()
+    LuaAddressables.LoadGameObjectAsync(
+        "Jump_Jump/Player",
+        function(prefab)
+            playerPrefab = prefab
+            PlayerControl:Spawn()
+        end
+    )
+end
+
+function PlayerControl:Spawn()
+    player = GameObject.Instantiate(playerPrefab)
+end

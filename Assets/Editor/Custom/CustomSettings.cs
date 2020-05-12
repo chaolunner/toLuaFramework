@@ -30,7 +30,9 @@ public static class CustomSettings
         typeof(UnityEngine.GL),
         typeof(UnityEngine.Graphics),
 
+        // 添加自 toLuaFramework
         typeof(LuaAddressables),
+        typeof(UnityEngine.Random),
     };
 
     //附加导出委托类型(在导出委托时, customTypeList 中牵扯的委托类型都会导出， 无需写在这里)
@@ -111,7 +113,7 @@ public static class CustomSettings
         _GT(typeof(CameraClearFlags)),
         _GT(typeof(AudioClip)),        
         _GT(typeof(AssetBundle)),
-        //_GT(typeof(ParticleSystem)),
+        //_GT(typeof(ParticleSystem)), /*Unity Version 2019.3.8f1 生成Wrap出错，暂时禁用，等待后续版本修复。*/
         _GT(typeof(AsyncOperation)).SetBaseType(typeof(System.Object)),        
         _GT(typeof(LightType)),
         _GT(typeof(SleepTimeout)),
@@ -153,7 +155,12 @@ public static class CustomSettings
         _GT(typeof(Resources)),     
         _GT(typeof(LuaProfiler)),
 
+        // 添加自 toLuaFramework
         _GT(typeof(LuaAddressables)),
+        _GT(typeof(UnityEngine.Random)),
+        // 添加自 Jump_Jump Demo
+        _GT(typeof(LuaBoxControl)),
+        _GT(typeof(LuaPlayerControl)),
     };
 
     public static List<Type> dynamicList = new List<Type>()

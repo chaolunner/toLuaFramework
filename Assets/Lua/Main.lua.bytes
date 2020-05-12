@@ -1,6 +1,7 @@
 --主入口函数。从这里开始lua逻辑
 function Main()
     GameObject = UnityEngine.GameObject
+    Random = UnityEngine.Random
     print("logic start")
 end
 
