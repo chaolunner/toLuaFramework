@@ -2,6 +2,7 @@
 function Main()
     GameObject = UnityEngine.GameObject
     Random = UnityEngine.Random
+    Input = UnityEngine.Input
     print("logic start")
 end
 
@@ -12,4 +13,8 @@ function OnLevelWasLoaded(level)
 end
 
 function OnApplicationQuit()
+end
+
+function Test(a)
+    print(a.name)
 end

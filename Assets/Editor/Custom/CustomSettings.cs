@@ -158,9 +158,9 @@ public static class CustomSettings
         // 添加自 toLuaFramework
         _GT(typeof(LuaAddressables)),
         _GT(typeof(UnityEngine.Random)),
-        // 添加自 Jump_Jump Demo
-        _GT(typeof(LuaBoxControl)),
-        _GT(typeof(LuaPlayerControl)),
+        _GT(typeof(LuaControl)),
+        _GT(typeof(LuaControlManager)),
+        _GT(typeof(ForceMode)),
     };
 
     public static List<Type> dynamicList = new List<Type>()
@@ -185,6 +185,9 @@ public static class CustomSettings
         typeof(SkinWeights),
         typeof(RenderTexture),
         typeof(Rigidbody),
+
+        // 添加自 toLuaFramework
+        typeof(ForceMode),
     };
 
     //重载函数，相同参数个数，相同位置out参数匹配出问题时, 需要强制匹配解决

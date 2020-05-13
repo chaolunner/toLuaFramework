@@ -1,27 +1,34 @@
 BoxControl = {}
 local this = BoxControl
-local boxPrefab
-local newBox
-local randomScale
 local minDistance = 1.5
 local maxDistance = 3
 
-function BoxControl:Start()
+function this.Start()
     LuaAddressables.LoadGameObjectAsync(
         "Jump_Jump/Box",
         function(prefab)
             boxPrefab = prefab
-            BoxControl:GenerateBox()
+            this.GenerateBox()
         end
     )
 end
 
-function BoxControl:GenerateBox()
+function this.OnDestroy()
+    GameObject.Destroy(newBox)
+end
+
+function this.GenerateBox()
     newBox = GameObject.Instantiate(boxPrefab)
     --盒子随机位置、大小、颜色
     randomScale = Random.Range(0.5, 1)
-    newBox.transform.position = Vector3(Random.Range(minDistance, maxDistance), 0, 0)
+    if currentBox == nil then
+        newBox.transform.position = Vector3(0, 0, 0)
+    else
+        newBox.transform.position =
+            currentBox.transform.position + Vector3(Random.Range(minDistance, maxDistance), 0, 0)
+    end
     newBox.transform.localScale = Vector3(randomScale, 0.5, randomScale)
     newBox:GetComponent("Renderer").material.color =
         Color(Random.Range(0.0, 1.0), Random.Range(0.0, 1.0), Random.Range(0.0, 1.0))
+    currentBox = newBox
 end

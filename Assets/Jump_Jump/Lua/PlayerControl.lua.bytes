@@ -1,18 +1,42 @@
 PlayerControl = {}
 local this = PlayerControl
-local playerPrefab
-local player
+local force = 7
 
-function PlayerControl:Start()
+function this.Start()
     LuaAddressables.LoadGameObjectAsync(
         "Jump_Jump/Player",
         function(prefab)
             playerPrefab = prefab
-            PlayerControl:Spawn()
+            this.Spawn()
         end
     )
 end
 
-function PlayerControl:Spawn()
+function this.Spawn()
     player = GameObject.Instantiate(playerPrefab)
+    player.transform.position = Vector3(0, 0.25, 0)
+    rigidbody = player:GetComponent("Rigidbody")
+    this.OnUpdate = UpdateBeat:CreateListener(PlayerControl.Update, this)
+    UpdateBeat:AddListener(this.OnUpdate)
+end
+
+function this.OnDestroy()
+    UpdateBeat:RemoveListener(this.OnUpdate)
+    GameObject.Destroy(player)
+end
+
+function this.Update()
+    if Input.GetKeyDown(UnityEngine.KeyCode.Space) then
+        startTime = Time.time --获取按下空格时的时间
+    end
+    if Input.GetKeyUp(UnityEngine.KeyCode.Space) then
+        endTime = Time.time - startTime --计算按下空格至松开的时间
+        this.StartJump(endTime)
+        --rigidbody:AddForce(Vector3(1, 1, 0) * endTime * force, UnityEngine.ForceMode.Impulse)
+    end
+end
+
+function this.StartJump(time)
+    --跳跃逻辑，这里的time可以理解为我们按下按钮的时间
+    rigidbody:AddForce(Vector3(1, 1, 0) * time * force, UnityEngine.ForceMode.Impulse)
 end

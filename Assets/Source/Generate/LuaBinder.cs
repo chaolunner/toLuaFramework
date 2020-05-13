@@ -12,8 +12,8 @@ public static class LuaBinder
 		LuaInterface_DebuggerWrap.Register(L);
 		LuaProfilerWrap.Register(L);
 		LuaAddressablesWrap.Register(L);
-		LuaBoxControlWrap.Register(L);
 		LuaControlWrap.Register(L);
+		LuaControlManagerWrap.Register(L);
 		L.BeginModule("LuaInterface");
 		LuaInterface_LuaInjectionStationWrap.Register(L);
 		LuaInterface_InjectTypeWrap.Register(L);
@@ -146,6 +146,7 @@ public static class LuaBinder
 		L.AddPreLoad("UnityEngine.SkinWeights", LuaOpen_UnityEngine_SkinWeights, typeof(UnityEngine.SkinWeights));
 		L.AddPreLoad("UnityEngine.RenderTexture", LuaOpen_UnityEngine_RenderTexture, typeof(UnityEngine.RenderTexture));
 		L.AddPreLoad("UnityEngine.Rigidbody", LuaOpen_UnityEngine_Rigidbody, typeof(UnityEngine.Rigidbody));
+		L.AddPreLoad("UnityEngine.ForceMode", LuaOpen_UnityEngine_ForceMode, typeof(UnityEngine.ForceMode));
 		L.EndPreLoad();
 		Debugger.Log("Register lua type cost time: {0}", Time.realtimeSinceStartup - t);
 	}
@@ -1653,6 +1654,24 @@ public static class LuaBinder
 			state.BeginPreModule("UnityEngine");
 			UnityEngine_RigidbodyWrap.Register(state);
 			int reference = state.GetMetaReference(typeof(UnityEngine.Rigidbody));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_ForceMode(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine");
+			UnityEngine_ForceModeWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.ForceMode));
 			state.EndPreModule(L, reference);
 			return 1;
 		}
