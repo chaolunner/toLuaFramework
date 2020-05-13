@@ -9,6 +9,7 @@ function this.Start()
         function(prefab)
             boxPrefab = prefab
             this.GenerateBox()
+            this.GenerateBox()
         end
     )
 end

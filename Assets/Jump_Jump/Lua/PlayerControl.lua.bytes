@@ -1,6 +1,8 @@
+require "LuaCollisionEnterListener"
+
 PlayerControl = {}
 local this = PlayerControl
-local force = 7
+local KeyCode = UnityEngine.KeyCode
 
 function this.Start()
     LuaAddressables.LoadGameObjectAsync(
@@ -15,7 +17,12 @@ end
 function this.Spawn()
     player = GameObject.Instantiate(playerPrefab)
     player.transform.position = Vector3(0, 0.25, 0)
+    GetOrCreateListener(player, typeof(LuaCollisionEnterListener), this.OnCollisionEnter)
     rigidbody = player:GetComponent("Rigidbody")
+    head = player.transform:Find("Head")
+    body = player.transform:Find("Body")
+    camera = Camera.main
+    cameraRelativePosition = camera.transform.position - player.transform.position
     this.OnUpdate = UpdateBeat:CreateListener(PlayerControl.Update, this)
     UpdateBeat:AddListener(this.OnUpdate)
 end
@@ -26,17 +33,37 @@ function this.OnDestroy()
 end
 
 function this.Update()
-    if Input.GetKeyDown(UnityEngine.KeyCode.Space) then
+    if Input.GetKeyDown(KeyCode.Space) then
         startTime = Time.time --获取按下空格时的时间
     end
-    if Input.GetKeyUp(UnityEngine.KeyCode.Space) then
+    if Input.GetKeyUp(KeyCode.Space) then
+        --DoTween恢复人物
+        body.transform:DOScale(0.1, 0.5)
+        head.transform:DOLocalMoveY(0.27, 0.5)
         endTime = Time.time - startTime --计算按下空格至松开的时间
         this.StartJump(endTime)
-        --rigidbody:AddForce(Vector3(1, 1, 0) * endTime * force, UnityEngine.ForceMode.Impulse)
+    end
+    if Input.GetKey(KeyCode.Space) then
+        --人物压缩效果
+        if body.localScale.y < 0.11 and body.localScale.y > 0.05 then
+            body.localScale = body.localScale + Vector3(1, -1, 1) * 0.05 * Time.deltaTime
+            head.localPosition = head.localPosition + Vector3(0, -1, 0) * 0.05 * Time.deltaTime
+        end
     end
 end
 
 function this.StartJump(time)
     --跳跃逻辑，这里的time可以理解为我们按下按钮的时间
-    rigidbody:AddForce(Vector3(1, 1, 0) * time * force, UnityEngine.ForceMode.Impulse)
+    rigidbody:AddForce(Vector3(1, 1, 0) * time * 7, UnityEngine.ForceMode.Impulse)
+end
+
+function this.OnCollisionEnter(collision)
+    if collision.collider.gameObject:CompareTag("Box") then
+        this.CameraMove()
+    end
+end
+
+function this.CameraMove()
+	--DoTween控制摄像机移动效果
+	camera.transform:DOMove(player.transform.position + cameraRelativePosition, 1)
 end

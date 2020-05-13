@@ -1,8 +1,10 @@
 --主入口函数。从这里开始lua逻辑
 function Main()
     GameObject = UnityEngine.GameObject
+    Transform = UnityEngine.Transform
     Random = UnityEngine.Random
     Input = UnityEngine.Input
+    Camera = UnityEngine.Camera
     print("logic start")
 end
 
@@ -15,6 +17,10 @@ end
 function OnApplicationQuit()
 end
 
-function Test(a)
-    print(a.name)
+function GetOrCreateListener(go, type, func)
+    listener = go:GetComponent(type)
+    if listener == nil then
+        listener = player:AddComponent(type)
+    end
+    listener.OnEvent = listener.OnEvent + func
 end

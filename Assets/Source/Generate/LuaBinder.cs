@@ -131,6 +131,7 @@ public static class LuaBinder
 		L.RegFunction("Func_bool", System_Func_bool);
 		L.RegFunction("Action_UnityEngine_AsyncOperation", System_Action_UnityEngine_AsyncOperation);
 		L.RegFunction("Action_UnityEngine_GameObject", System_Action_UnityEngine_GameObject);
+		L.RegFunction("Action_UnityEngine_Collision", System_Action_UnityEngine_Collision);
 		L.EndModule();
 		L.EndModule();
 		L.BeginPreLoad();
@@ -147,6 +148,10 @@ public static class LuaBinder
 		L.AddPreLoad("UnityEngine.RenderTexture", LuaOpen_UnityEngine_RenderTexture, typeof(UnityEngine.RenderTexture));
 		L.AddPreLoad("UnityEngine.Rigidbody", LuaOpen_UnityEngine_Rigidbody, typeof(UnityEngine.Rigidbody));
 		L.AddPreLoad("UnityEngine.ForceMode", LuaOpen_UnityEngine_ForceMode, typeof(UnityEngine.ForceMode));
+		L.AddPreLoad("UnityEngine.Collision", LuaOpen_UnityEngine_Collision, typeof(UnityEngine.Collision));
+		L.AddPreLoad("LuaCollisionEnterListener", LuaOpen_LuaCollisionEnterListener, typeof(LuaCollisionEnterListener));
+		L.AddPreLoad("LuaCollisionStayListener", LuaOpen_LuaCollisionStayListener, typeof(LuaCollisionStayListener));
+		L.AddPreLoad("LuaCollisionExitListener", LuaOpen_LuaCollisionExitListener, typeof(LuaCollisionExitListener));
 		L.EndPreLoad();
 		Debugger.Log("Register lua type cost time: {0}", Time.realtimeSinceStartup - t);
 	}
@@ -1448,6 +1453,33 @@ public static class LuaBinder
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Action_UnityEngine_Collision(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.Collision>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.Collision>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int LuaOpen_UnityEngine_MeshRenderer(IntPtr L)
 	{
 		try
@@ -1672,6 +1704,78 @@ public static class LuaBinder
 			state.BeginPreModule("UnityEngine");
 			UnityEngine_ForceModeWrap.Register(state);
 			int reference = state.GetMetaReference(typeof(UnityEngine.ForceMode));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_Collision(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine");
+			UnityEngine_CollisionWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.Collision));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_LuaCollisionEnterListener(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("");
+			LuaCollisionEnterListenerWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(LuaCollisionEnterListener));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_LuaCollisionStayListener(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("");
+			LuaCollisionStayListenerWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(LuaCollisionStayListener));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_LuaCollisionExitListener(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("");
+			LuaCollisionExitListenerWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(LuaCollisionExitListener));
 			state.EndPreModule(L, reference);
 			return 1;
 		}

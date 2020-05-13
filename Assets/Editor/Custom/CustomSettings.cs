@@ -161,6 +161,10 @@ public static class CustomSettings
         _GT(typeof(LuaControl)),
         _GT(typeof(LuaControlManager)),
         _GT(typeof(ForceMode)),
+        _GT(typeof(Collision)),
+        _GT(typeof(LuaCollisionEnterListener)),
+        _GT(typeof(LuaCollisionStayListener)),
+        _GT(typeof(LuaCollisionExitListener)),
     };
 
     public static List<Type> dynamicList = new List<Type>()
@@ -188,6 +192,10 @@ public static class CustomSettings
 
         // 添加自 toLuaFramework
         typeof(ForceMode),
+        typeof(Collision),
+        typeof(LuaCollisionEnterListener),
+        typeof(LuaCollisionStayListener),
+        typeof(LuaCollisionExitListener),
     };
 
     //重载函数，相同参数个数，相同位置out参数匹配出问题时, 需要强制匹配解决
