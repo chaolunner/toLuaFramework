@@ -1,0 +1,14 @@
+PlayerProxy = {}
+local this = PlayerProxy
+
+function this.OnRegister()
+    LuaAddressables.LoadGameObjectAsync(
+        "Jump_Jump/Player",
+        function(prefab)
+            this.playerPrefab = prefab
+        end
+    )
+end
+
+function this.OnRemove()
+end

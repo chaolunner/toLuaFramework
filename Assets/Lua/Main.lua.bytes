@@ -5,6 +5,10 @@ function Main()
     Random = UnityEngine.Random
     Input = UnityEngine.Input
     Camera = UnityEngine.Camera
+
+    LuaFacade.RegisterCommand("StartUpCommand", "StartUp")
+    LuaFacade.SendNotification("StartUp")
+    
     print("logic start")
 end
 
@@ -17,10 +21,10 @@ end
 function OnApplicationQuit()
 end
 
-function GetOrCreateListener(go, type, func)
+function GetOrCreateListener(go, type)
     listener = go:GetComponent(type)
     if listener == nil then
-        listener = player:AddComponent(type)
+        listener = go:AddComponent(type)
     end
-    listener.OnEvent = listener.OnEvent + func
+    return listener
 end

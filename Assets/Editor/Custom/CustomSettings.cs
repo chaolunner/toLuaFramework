@@ -31,6 +31,7 @@ public static class CustomSettings
         typeof(UnityEngine.Graphics),
 
         // 添加自 toLuaFramework
+        typeof(LuaFacade),
         typeof(LuaAddressables),
         typeof(UnityEngine.Random),
     };
@@ -156,10 +157,13 @@ public static class CustomSettings
         _GT(typeof(LuaProfiler)),
 
         // 添加自 toLuaFramework
+        _GT(typeof(LuaFacade)),
         _GT(typeof(LuaAddressables)),
         _GT(typeof(UnityEngine.Random)),
-        _GT(typeof(LuaControl)),
-        _GT(typeof(LuaControlManager)),
+        _GT(typeof(PureMVC.Patterns.Observer.Notification)),
+        _GT(typeof(LuaMediator)),
+        _GT(typeof(LuaCommand)),
+        _GT(typeof(LuaProxy)),
         _GT(typeof(ForceMode)),
         _GT(typeof(Collision)),
         _GT(typeof(LuaCollisionEnterListener)),

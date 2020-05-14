@@ -4,6 +4,9 @@ local minDistance = 1.5
 local maxDistance = 3
 
 function this.Start()
+    setmetatable(this, { __index = function() return 2 end })
+    print(__index)
+    ControlManager:AddControl(this)
     LuaAddressables.LoadGameObjectAsync(
         "Jump_Jump/Box",
         function(prefab)

@@ -1,0 +1,6 @@
+StartUpCommand = {}
+local this = StartUpCommand
+
+function this.Execute(notification)
+    LuaFacade.RegisterMediator("PlayerMediator")
+end
