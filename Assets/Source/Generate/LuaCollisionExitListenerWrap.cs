@@ -6,7 +6,7 @@ public class LuaCollisionExitListenerWrap
 {
 	public static void Register(LuaState L)
 	{
-		L.BeginClass(typeof(LuaCollisionExitListener), typeof(LuaCollisionListener));
+		L.BeginClass(typeof(LuaCollisionExitListener), typeof(LuaBaseListener));
 		L.RegFunction("__eq", op_Equality);
 		L.RegFunction("__tostring", ToLua.op_ToString);
 		L.EndClass();

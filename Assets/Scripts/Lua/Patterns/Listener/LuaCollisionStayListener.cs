@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [DisallowMultipleComponent]
-public class LuaCollisionStayListener : LuaCollisionListener
+public class LuaCollisionStayListener : LuaBaseListener
 {
     private void OnCollisionStay(Collision collision)
     {

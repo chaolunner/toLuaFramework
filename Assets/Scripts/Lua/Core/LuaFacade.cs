@@ -6,9 +6,7 @@ using System.IO;
 
 public class LuaFacade
 {
-    private string type;
-
-    private static IFacade Facade
+    private static IFacade facade
     {
         get
         {
@@ -16,7 +14,7 @@ public class LuaFacade
         }
     }
 
-    private static LuaState LuaState
+    private static LuaState luaState
     {
         get
         {
@@ -47,92 +45,74 @@ public class LuaFacade
         };
     }
 
-    public static LuaFacade DoFile(string type)
+    public static void Require(string type)
     {
-        LuaState.DoFile(type);
-        return new LuaFacade() { type = type };
+        luaState.Require(type);
     }
 
-    public static LuaFacade Require(string type)
+    public static LuaTable GetTable(string type)
     {
-        LuaState.Require(type);
-        return new LuaFacade() { type = type };
+        Require(type);
+        return luaState.GetTable(type);
     }
 
-    public void Call(string func)
+    public static LuaTable New(string type)
     {
-        var luaFunc = LuaState.GetFunction(type + "." + func);
-        luaFunc.Call();
-        luaFunc.Dispose();
-    }
-
-    public void Call<T1>(string func, T1 arg1)
-    {
-        var luaFunc = LuaState.GetFunction(type + "." + func);
-        luaFunc.Call(arg1);
-        luaFunc.Dispose();
-    }
-
-    public R1 Invoke<R1>(string func)
-    {
-        var luaFunc = LuaState.GetFunction(type + "." + func);
-        R1 ret1 = luaFunc.Invoke<R1>();
-        luaFunc.Dispose();
-        return ret1;
+        return GetTable(type).Invoke<LuaTable>("new");
     }
 
     public static void RegisterMediator(string mediatorName, object viewComponent = null)
     {
-        Facade.RegisterMediator(new LuaMediator(mediatorName, viewComponent));
+        facade.RegisterMediator(new LuaMediator(mediatorName, viewComponent));
     }
 
     public static LuaTable RetrieveMediator(string mediatorName)
     {
-        return LuaState.GetTable(mediatorName);
+        return (facade.RetrieveMediator(mediatorName) as LuaMediator).Mediator;
     }
 
     public static void HasMediator(string mediatorName)
     {
-        Facade.HasMediator(mediatorName);
+        facade.HasMediator(mediatorName);
     }
 
     public static void RemoveMediator(string mediatorName)
     {
-        Facade.RemoveMediator(mediatorName);
+        facade.RemoveMediator(mediatorName);
     }
 
     public static void SendNotification(string notificationName, object body = null, string type = null)
     {
-        Facade.SendNotification(notificationName, body, type);
+        facade.SendNotification(notificationName, body, type);
     }
 
     public static void RegisterCommand(string commandName, string notificationName)
     {
-        Facade.RegisterCommand(notificationName, () => { return new LuaCommand(commandName); });
+        facade.RegisterCommand(notificationName, () => { return new LuaCommand(commandName); });
     }
 
     public static void HasCommand(string notificationName)
     {
-        Facade.HasCommand(notificationName);
+        facade.HasCommand(notificationName);
     }
 
     public static void RemoveCommand(string notificationName)
     {
-        Facade.RemoveCommand(notificationName);
+        facade.RemoveCommand(notificationName);
     }
 
     public static void RegisterProxy(string proxyName, object data = null)
     {
-        Facade.RegisterProxy(new LuaProxy(proxyName, data));
+        facade.RegisterProxy(new LuaProxy(proxyName, data));
     }
 
     public static LuaTable RetrieveProxy(string proxyName)
     {
-        return LuaState.GetTable(proxyName);
+        return (facade.RetrieveProxy(proxyName) as LuaProxy).Proxy;
     }
 
     public static void RemoveProxy(string proxyName)
     {
-        Facade.RemoveProxy(proxyName);
+        facade.RemoveProxy(proxyName);
     }
 }

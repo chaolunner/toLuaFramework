@@ -1,5 +1,11 @@
 --主入口函数。从这里开始lua逻辑
 function Main()
+    Class = require("Class")
+    Action = require("Action")
+    Command = require("Command")
+    Mediator = require("Mediator")
+    Proxy = require("Proxy")
+
     GameObject = UnityEngine.GameObject
     Transform = UnityEngine.Transform
     Random = UnityEngine.Random
@@ -8,7 +14,7 @@ function Main()
 
     LuaFacade.RegisterCommand("StartUpCommand", "StartUp")
     LuaFacade.SendNotification("StartUp")
-    
+
     print("logic start")
 end
 
@@ -21,10 +27,14 @@ end
 function OnApplicationQuit()
 end
 
-function GetOrCreateListener(go, type)
-    listener = go:GetComponent(type)
-    if listener == nil then
-        listener = go:AddComponent(type)
+function class(base)
+    return Class.class(base)
+end
+
+function GetOrCreateComponent(go, type)
+    component = go:GetComponent(type)
+    if component == nil then
+        component = go:AddComponent(type)
     end
-    return listener
+    return component
 end

@@ -1,15 +1,15 @@
 ﻿using UnityEngine.AddressableAssets;
+using LuaInterface;
 using UnityEngine;
-using System;
 
 public static class LuaAddressables
 {
-    public static void LoadGameObjectAsync(object key, Action<GameObject> action)
+    public static void LoadGameObjectAsync(object key, LuaTable cls, LuaTable obj, string name)
     {
         Addressables.LoadAssetAsync<GameObject>(key).Completed += handle =>
         {
             if (handle.Result == null) { return; }
-            action?.Invoke(handle.Result);
+            cls.Call(name, obj, handle.Result);
         };
     }
 }

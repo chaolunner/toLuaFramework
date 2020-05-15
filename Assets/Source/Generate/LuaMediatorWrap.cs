@@ -13,6 +13,7 @@ public class LuaMediatorWrap
 		L.RegFunction("OnRemove", OnRemove);
 		L.RegFunction("New", _CreateLuaMediator);
 		L.RegFunction("__tostring", ToLua.op_ToString);
+		L.RegVar("Mediator", get_Mediator, null);
 		L.EndClass();
 	}
 
@@ -112,6 +113,25 @@ public class LuaMediatorWrap
 		catch (Exception e)
 		{
 			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_Mediator(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			LuaMediator obj = (LuaMediator)o;
+			LuaInterface.LuaTable ret = obj.Mediator;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Mediator on a nil value");
 		}
 	}
 }

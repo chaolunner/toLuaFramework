@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [DisallowMultipleComponent]
-public class LuaCollisionExitListener : LuaCollisionListener
+public class LuaCollisionExitListener : LuaBaseListener
 {
     private void OnCollisionExit(Collision collision)
     {

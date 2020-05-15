@@ -10,6 +10,7 @@ public class LuaCommandWrap
 		L.RegFunction("Execute", Execute);
 		L.RegFunction("New", _CreateLuaCommand);
 		L.RegFunction("__tostring", ToLua.op_ToString);
+		L.RegVar("Command", get_Command, null);
 		L.RegVar("CommandName", get_CommandName, null);
 		L.EndClass();
 	}
@@ -53,6 +54,25 @@ public class LuaCommandWrap
 		catch (Exception e)
 		{
 			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_Command(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			LuaCommand obj = (LuaCommand)o;
+			LuaInterface.LuaTable ret = obj.Command;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Command on a nil value");
 		}
 	}
 

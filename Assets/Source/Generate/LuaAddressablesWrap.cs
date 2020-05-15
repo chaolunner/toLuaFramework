@@ -16,10 +16,12 @@ public class LuaAddressablesWrap
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 2);
+			ToLua.CheckArgsCount(L, 4);
 			object arg0 = ToLua.ToVarObject(L, 1);
-			System.Action<UnityEngine.GameObject> arg1 = (System.Action<UnityEngine.GameObject>)ToLua.CheckDelegate<System.Action<UnityEngine.GameObject>>(L, 2);
-			LuaAddressables.LoadGameObjectAsync(arg0, arg1);
+			LuaTable arg1 = ToLua.CheckLuaTable(L, 2);
+			LuaTable arg2 = ToLua.CheckLuaTable(L, 3);
+			string arg3 = ToLua.CheckString(L, 4);
+			LuaAddressables.LoadGameObjectAsync(arg0, arg1, arg2, arg3);
 			return 0;
 		}
 		catch (Exception e)

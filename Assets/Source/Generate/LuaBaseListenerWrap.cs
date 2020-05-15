@@ -2,11 +2,11 @@
 using System;
 using LuaInterface;
 
-public class LuaCollisionListenerWrap
+public class LuaBaseListenerWrap
 {
 	public static void Register(LuaState L)
 	{
-		L.BeginClass(typeof(LuaCollisionListener), typeof(UnityEngine.MonoBehaviour));
+		L.BeginClass(typeof(LuaBaseListener), typeof(UnityEngine.MonoBehaviour));
 		L.RegFunction("AddListener", AddListener);
 		L.RegFunction("RemoveListener", RemoveListener);
 		L.RegFunction("RemoveAllListeners", RemoveAllListeners);
@@ -20,10 +20,12 @@ public class LuaCollisionListenerWrap
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 2);
-			LuaCollisionListener obj = (LuaCollisionListener)ToLua.CheckObject<LuaCollisionListener>(L, 1);
-			System.Action<UnityEngine.Collision> arg0 = (System.Action<UnityEngine.Collision>)ToLua.CheckDelegate<System.Action<UnityEngine.Collision>>(L, 2);
-			obj.AddListener(arg0);
+			ToLua.CheckArgsCount(L, 4);
+			LuaBaseListener obj = (LuaBaseListener)ToLua.CheckObject<LuaBaseListener>(L, 1);
+			LuaTable arg0 = ToLua.CheckLuaTable(L, 2);
+			LuaTable arg1 = ToLua.CheckLuaTable(L, 3);
+			string arg2 = ToLua.CheckString(L, 4);
+			obj.AddListener(arg0, arg1, arg2);
 			return 0;
 		}
 		catch (Exception e)
@@ -37,10 +39,11 @@ public class LuaCollisionListenerWrap
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 2);
-			LuaCollisionListener obj = (LuaCollisionListener)ToLua.CheckObject<LuaCollisionListener>(L, 1);
-			System.Action<UnityEngine.Collision> arg0 = (System.Action<UnityEngine.Collision>)ToLua.CheckDelegate<System.Action<UnityEngine.Collision>>(L, 2);
-			obj.RemoveListener(arg0);
+			ToLua.CheckArgsCount(L, 3);
+			LuaBaseListener obj = (LuaBaseListener)ToLua.CheckObject<LuaBaseListener>(L, 1);
+			LuaTable arg0 = ToLua.CheckLuaTable(L, 2);
+			LuaTable arg1 = ToLua.CheckLuaTable(L, 3);
+			obj.RemoveListener(arg0, arg1);
 			return 0;
 		}
 		catch (Exception e)
@@ -55,7 +58,7 @@ public class LuaCollisionListenerWrap
 		try
 		{
 			ToLua.CheckArgsCount(L, 1);
-			LuaCollisionListener obj = (LuaCollisionListener)ToLua.CheckObject<LuaCollisionListener>(L, 1);
+			LuaBaseListener obj = (LuaBaseListener)ToLua.CheckObject<LuaBaseListener>(L, 1);
 			obj.RemoveAllListeners();
 			return 0;
 		}

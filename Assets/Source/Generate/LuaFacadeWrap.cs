@@ -7,9 +7,9 @@ public class LuaFacadeWrap
 	public static void Register(LuaState L)
 	{
 		L.BeginStaticLibs("LuaFacade");
-		L.RegFunction("DoFile", DoFile);
 		L.RegFunction("Require", Require);
-		L.RegFunction("Call", Call);
+		L.RegFunction("GetTable", GetTable);
+		L.RegFunction("New", New);
 		L.RegFunction("RegisterMediator", RegisterMediator);
 		L.RegFunction("RetrieveMediator", RetrieveMediator);
 		L.RegFunction("HasMediator", HasMediator);
@@ -25,31 +25,30 @@ public class LuaFacadeWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int DoFile(IntPtr L)
-	{
-		try
-		{
-			ToLua.CheckArgsCount(L, 1);
-			string arg0 = ToLua.CheckString(L, 1);
-			LuaFacade o = LuaFacade.DoFile(arg0);
-			ToLua.PushObject(L, o);
-			return 1;
-		}
-		catch (Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e);
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int Require(IntPtr L)
 	{
 		try
 		{
 			ToLua.CheckArgsCount(L, 1);
 			string arg0 = ToLua.CheckString(L, 1);
-			LuaFacade o = LuaFacade.Require(arg0);
-			ToLua.PushObject(L, o);
+			LuaFacade.Require(arg0);
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int GetTable(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 1);
+			string arg0 = ToLua.CheckString(L, 1);
+			LuaInterface.LuaTable o = LuaFacade.GetTable(arg0);
+			ToLua.Push(L, o);
 			return 1;
 		}
 		catch (Exception e)
@@ -59,15 +58,15 @@ public class LuaFacadeWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int Call(IntPtr L)
+	static int New(IntPtr L)
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 2);
-			LuaFacade obj = (LuaFacade)ToLua.CheckObject<LuaFacade>(L, 1);
-			string arg0 = ToLua.CheckString(L, 2);
-			obj.Call(arg0);
-			return 0;
+			ToLua.CheckArgsCount(L, 1);
+			string arg0 = ToLua.CheckString(L, 1);
+			LuaInterface.LuaTable o = LuaFacade.New(arg0);
+			ToLua.Push(L, o);
+			return 1;
 		}
 		catch (Exception e)
 		{

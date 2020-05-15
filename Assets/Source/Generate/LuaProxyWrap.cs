@@ -11,6 +11,7 @@ public class LuaProxyWrap
 		L.RegFunction("OnRemove", OnRemove);
 		L.RegFunction("New", _CreateLuaProxy);
 		L.RegFunction("__tostring", ToLua.op_ToString);
+		L.RegVar("Proxy", get_Proxy, null);
 		L.EndClass();
 	}
 
@@ -76,6 +77,25 @@ public class LuaProxyWrap
 		catch (Exception e)
 		{
 			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_Proxy(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			LuaProxy obj = (LuaProxy)o;
+			LuaInterface.LuaTable ret = obj.Proxy;
+			ToLua.Push(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Proxy on a nil value");
 		}
 	}
 }

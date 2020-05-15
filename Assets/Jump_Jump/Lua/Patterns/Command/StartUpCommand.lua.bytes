@@ -1,6 +1,8 @@
-StartUpCommand = {}
-local this = StartUpCommand
+StartUpCommand = class(Command)
 
-function this.Execute(notification)
+function StartUpCommand:Execute(notification)
+    self:super("Execute")
     LuaFacade.RegisterMediator("PlayerMediator")
 end
+
+return StartUpCommand

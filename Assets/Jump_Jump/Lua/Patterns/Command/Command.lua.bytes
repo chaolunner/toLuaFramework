@@ -1,0 +1,6 @@
+Command = class()
+
+function Command:Execute(notification)
+end
+
+return Command
