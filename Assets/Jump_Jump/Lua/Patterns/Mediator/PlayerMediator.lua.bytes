@@ -12,7 +12,9 @@ end
 
 function PlayerMediator:OnRegister()
     LuaFacade.RegisterProxy("PlayerProxy")
+    LuaFacade.RegisterProxy("CameraProxy")
     self.playerProxy = LuaFacade.RetrieveProxy("PlayerProxy")
+    self.cameraProxy = LuaFacade.RetrieveProxy("CameraProxy")
     table.insert(self.playerProxy.OnSpawn, Action.new(self, PlayerMediator.Spawn))
 end
 
@@ -28,26 +30,27 @@ function PlayerMediator:Spawn(playerProxy)
     )
     self.OnUpdate = UpdateBeat:CreateListener(PlayerMediator.Update, self)
     UpdateBeat:AddListener(self.OnUpdate)
-    --camera = Camera.main
-    --cameraRelativePosition = camera.transform.position - player.transform.position
+    self.cameraProxy.cameraRelativePosition =
+        self.cameraProxy.camera.transform.position - self.playerProxy.player.transform.position
 end
 
 function PlayerMediator:Update()
     if Input.GetKeyDown(KeyCode.Space) then
-        startTime = Time.time --获取按下空格时的时间
+        self.startTime = Time.time
     end
     if Input.GetKeyUp(KeyCode.Space) then
         --DoTween恢复人物
         self.playerProxy.body.transform:DOScale(0.1, 0.5)
         self.playerProxy.head.transform:DOLocalMoveY(0.27, 0.5)
-        endTime = Time.time - startTime --计算按下空格至松开的时间
-        self:StartJump(endTime)
+        self:StartJump(Time.time - self.startTime)
     end
     if Input.GetKey(KeyCode.Space) then
         --人物压缩效果
         if self.playerProxy.body.localScale.y < 0.11 and self.playerProxy.body.localScale.y > 0.05 then
-            self.playerProxy.body.localScale = self.playerProxy.body.localScale + Vector3(1, -1, 1) * 0.05 * Time.deltaTime
-            self.playerProxy.head.localPosition = self.playerProxy.head.localPosition + Vector3(0, -1, 0) * 0.05 * Time.deltaTime
+            self.playerProxy.body.localScale =
+                self.playerProxy.body.localScale + Vector3(1, -1, 1) * 0.05 * Time.deltaTime
+            self.playerProxy.head.localPosition =
+                self.playerProxy.head.localPosition + Vector3(0, -1, 0) * 0.05 * Time.deltaTime
         end
     end
 end
@@ -59,13 +62,16 @@ end
 
 function PlayerMediator:OnCollisionEnter(collision)
     if collision.collider.gameObject:CompareTag("Box") then
-        self.CameraMove()
+        self:CameraMove()
     end
 end
 
 function PlayerMediator:CameraMove()
     --DoTween控制摄像机移动效果
-    camera.transform:DOMove(player.transform.position + cameraRelativePosition, 1)
+    self.cameraProxy.camera.transform:DOMove(
+        self.playerProxy.player.transform.position + self.cameraProxy.cameraRelativePosition,
+        1
+    )
 end
 
 return PlayerMediator

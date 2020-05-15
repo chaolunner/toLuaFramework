@@ -14,7 +14,6 @@ function PlayerProxy:OnRemove()
 end
 
 function PlayerProxy:Spawn(prefab)
-    self.playerPrefab = prefab
     self.player = GameObject.Instantiate(prefab)
     self.rigidbody = self.player:GetComponent("Rigidbody")
     self.head = self.player.transform:Find("Head")
