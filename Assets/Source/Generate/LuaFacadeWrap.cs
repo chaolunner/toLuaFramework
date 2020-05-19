@@ -170,14 +170,14 @@ public class LuaFacadeWrap
 			else if (count == 2)
 			{
 				string arg0 = ToLua.CheckString(L, 1);
-				object arg1 = ToLua.ToVarObject(L, 2);
+				LuaTable arg1 = ToLua.CheckLuaTable(L, 2);
 				LuaFacade.SendNotification(arg0, arg1);
 				return 0;
 			}
 			else if (count == 3)
 			{
 				string arg0 = ToLua.CheckString(L, 1);
-				object arg1 = ToLua.ToVarObject(L, 2);
+				LuaTable arg1 = ToLua.CheckLuaTable(L, 2);
 				string arg2 = ToLua.CheckString(L, 3);
 				LuaFacade.SendNotification(arg0, arg1, arg2);
 				return 0;

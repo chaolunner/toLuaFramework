@@ -44,6 +44,11 @@ function class(base)
         end
 
         setmetatable(obj, {__index = _class[class_type]})
+
+        if obj.init then
+            obj:init()
+        end
+
         return obj
     end
 

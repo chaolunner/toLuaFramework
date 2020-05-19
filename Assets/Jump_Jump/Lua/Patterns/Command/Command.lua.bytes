@@ -1,4 +1,4 @@
-Command = class()
+Command = class(Base)
 
 function Command:Execute(notification)
 end

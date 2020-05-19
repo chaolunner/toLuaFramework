@@ -1,0 +1,43 @@
+Pool = class()
+
+function Pool:ctor()
+    self.OnClear = {}
+    self.active = Array.new()
+    self.inactive = Array.new()
+end
+
+function Pool:getFirst()
+    return self.active[1]
+end
+
+function Pool:getLast()
+    return self.active[self.active.length]
+end
+
+function Pool:Push(item)
+    self.active:Remove(item)
+    self.inactive:Add(item)
+end
+
+function Pool:Pop()
+    local item = self.inactive[1]
+    if item then
+        table.insert(self.active, item)
+        self.inactive:RemoveAt(1)
+    end
+    return item
+end
+
+function Pool:Clear()
+    for i = 1, self.active.length do
+        self.inactive:Add(self.active[i])
+    end
+    self.active:Clear()
+    if self.OnClear then
+        for k, v in ipairs(self.OnClear) do
+            v:Invoke(self.inactive.elements)
+        end
+    end
+end
+
+return Pool

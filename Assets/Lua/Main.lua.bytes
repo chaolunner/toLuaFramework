@@ -1,7 +1,10 @@
 --主入口函数。从这里开始lua逻辑
 function Main()
     Class = require("Class")
+    Base = require("Base")
     Action = require("Action")
+    Array = require("Array")
+    Pool = require("Pool")
     Command = require("Command")
     Mediator = require("Mediator")
     Proxy = require("Proxy")
@@ -11,6 +14,7 @@ function Main()
     Random = UnityEngine.Random
     Input = UnityEngine.Input
     Camera = UnityEngine.Camera
+    MaterialPropertyBlock = UnityEngine.MaterialPropertyBlock
 
     LuaFacade.RegisterCommand("StartUpCommand", "StartUp")
     LuaFacade.SendNotification("StartUp")

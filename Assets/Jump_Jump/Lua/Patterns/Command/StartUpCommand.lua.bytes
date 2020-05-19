@@ -2,6 +2,8 @@ StartUpCommand = class(Command)
 
 function StartUpCommand:Execute(notification)
     self:super("Execute")
+    LuaFacade.RegisterMediator("CameraMediator")
+    LuaFacade.RegisterMediator("BoxMediator")
     LuaFacade.RegisterMediator("PlayerMediator")
 end
 

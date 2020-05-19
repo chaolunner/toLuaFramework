@@ -166,6 +166,7 @@ public static class CustomSettings
         _GT(typeof(LuaProxy)),
         _GT(typeof(ForceMode)),
         _GT(typeof(Collision)),
+        _GT(typeof(MaterialPropertyBlock)),
         _GT(typeof(LuaCollisionEnterListener)),
         _GT(typeof(LuaCollisionStayListener)),
         _GT(typeof(LuaCollisionExitListener)),

@@ -1,4 +1,4 @@
-Proxy = class()
+Proxy = class(Base)
 
 function Proxy:OnRegister()
 end

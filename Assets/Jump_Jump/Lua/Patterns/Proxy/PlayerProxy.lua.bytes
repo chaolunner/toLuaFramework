@@ -21,7 +21,7 @@ function PlayerProxy:Spawn(prefab)
 
     if self.OnSpawn then
         for k, v in ipairs(self.OnSpawn) do
-            v:Invoke(self)
+            v:Invoke()
         end
     end
 end

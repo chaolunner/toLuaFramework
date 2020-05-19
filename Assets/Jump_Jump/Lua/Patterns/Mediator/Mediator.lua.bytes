@@ -1,4 +1,4 @@
-Mediator = class()
+Mediator = class(Base)
 
 function Mediator:ListNotificationInterests()
     return {}

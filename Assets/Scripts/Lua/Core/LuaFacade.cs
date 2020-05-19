@@ -1,4 +1,5 @@
 ﻿using UnityEngine.AddressableAssets;
+using PureMVC.Patterns.Observer;
 using PureMVC.Interfaces;
 using LuaInterface;
 using UnityEngine;
@@ -81,9 +82,9 @@ public class LuaFacade
         facade.RemoveMediator(mediatorName);
     }
 
-    public static void SendNotification(string notificationName, object body = null, string type = null)
+    public static void SendNotification(string notificationName, LuaTable body = null, string type = null)
     {
-        facade.SendNotification(notificationName, body, type);
+        facade.NotifyObservers(new Notification(notificationName, body, type));
     }
 
     public static void RegisterCommand(string commandName, string notificationName)
