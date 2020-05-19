@@ -2,6 +2,7 @@ Pool = class()
 
 function Pool:ctor()
     self.OnClear = {}
+    self.OnLack = {}
     self.active = Array.new()
     self.inactive = Array.new()
 end
@@ -24,6 +25,14 @@ function Pool:Pop()
     if item then
         self.active:Add(item)
         self.inactive:RemoveAt(1)
+    else
+        for k, v in ipairs(self.OnLack) do
+            item = v:Invoke()
+        end
+        if item == nil then
+            self:Push(self:getFirst())
+            item = self:Pop()
+        end
     end
     return item
 end
