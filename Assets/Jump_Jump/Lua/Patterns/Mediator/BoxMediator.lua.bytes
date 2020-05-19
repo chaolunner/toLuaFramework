@@ -4,7 +4,7 @@ local maxDistance = 3
 
 function BoxMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {"PlayerJumped"}
+    return {"PlayerJumped", "GameOver"}
 end
 
 function BoxMediator:HandleNotification(notification)
@@ -16,9 +16,15 @@ function BoxMediator:HandleNotification(notification)
             if currentBox == nil then
                 self:UpdateBox()
             elseif currentBox == notification.Body.hit then
+                LuaFacade.SendNotification("GameOver")
             else
+                self:UpdateBox()
             end
+        else
+            LuaFacade.SendNotification("GameOver")
         end
+    elseif notification.Name == "GameOver" then
+        self.boxProxy.pool:Clear()
     end
 end
 

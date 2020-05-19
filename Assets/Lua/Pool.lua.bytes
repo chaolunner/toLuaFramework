@@ -22,17 +22,16 @@ end
 function Pool:Pop()
     local item = self.inactive[1]
     if item then
-        table.insert(self.active, item)
+        self.active:Add(item)
         self.inactive:RemoveAt(1)
     end
     return item
 end
 
 function Pool:Clear()
-    for i = 1, self.active.length do
-        self.inactive:Add(self.active[i])
+    while self.active.length > 0 do
+        self:Push(self.active[1])
     end
-    self.active:Clear()
     if self.OnClear then
         for k, v in ipairs(self.OnClear) do
             v:Invoke(self.inactive.elements)
