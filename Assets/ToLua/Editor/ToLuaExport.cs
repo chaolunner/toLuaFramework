@@ -166,7 +166,10 @@ public static class ToLuaExport
         "KeyValuePair.Deconstruct",
         "ParticleSystem.SetJob",
         "ParticleSystem.subEmitters", /*2019.09 ios编译出错，也可能是unity版本问题*/
-        "Type.IsSZArray"
+        "Type.IsSZArray",
+
+        // 添加自 toLuaFramework
+        "MeshRenderer.receiveGI",
     };
 
     class _MethodBase
@@ -645,7 +648,15 @@ public static class ToLuaExport
     public static List<MemberInfo> memberInfoFilter = new List<MemberInfo>
     {
         //可精确查找一个函数
-        //Type.GetMethod(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers);		
+        //Type.GetMethod(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers);	
+        
+        // 添加自 toLuaFramework
+        typeof(ParticleSystem).GetMethod("SetParticles", new Type[] { typeof(Unity.Collections.NativeArray<ParticleSystem.Particle>) }),
+        typeof(ParticleSystem).GetMethod("SetParticles", new Type[] { typeof(Unity.Collections.NativeArray<ParticleSystem.Particle>), typeof(int) }),
+        typeof(ParticleSystem).GetMethod("SetParticles", new Type[] { typeof(Unity.Collections.NativeArray<ParticleSystem.Particle>), typeof(int), typeof(int) }),
+        typeof(ParticleSystem).GetMethod("GetParticles", new Type[] { typeof(Unity.Collections.NativeArray<ParticleSystem.Particle>) }),
+        typeof(ParticleSystem).GetMethod("GetParticles", new Type[] { typeof(Unity.Collections.NativeArray<ParticleSystem.Particle>), typeof(int) }),
+        typeof(ParticleSystem).GetMethod("GetParticles", new Type[] { typeof(Unity.Collections.NativeArray<ParticleSystem.Particle>), typeof(int), typeof(int) }),
     };
 
     public static bool IsMemberFilter(MemberInfo mi)

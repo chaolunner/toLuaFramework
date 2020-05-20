@@ -114,7 +114,7 @@ public static class CustomSettings
         _GT(typeof(CameraClearFlags)),
         _GT(typeof(AudioClip)),        
         _GT(typeof(AssetBundle)),
-        //_GT(typeof(ParticleSystem)), /*Unity Version 2019.3.8f1 生成Wrap出错，暂时禁用，等待后续版本修复。*/
+        _GT(typeof(ParticleSystem)),
         _GT(typeof(AsyncOperation)).SetBaseType(typeof(System.Object)),        
         _GT(typeof(LightType)),
         _GT(typeof(SleepTimeout)),

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: 
-  m_DefaultGroup: f65aed406e9568941b3224136ca4e36f
+  m_DefaultGroup: dc6f965ebc6a552449525e26c6d59eb4
   m_BuildRemoteCatalog: 0
   m_RemoteCatalogBuildPath:
     m_Id: 5ab588007e9e6ed4e945ee7908f2dd4c
