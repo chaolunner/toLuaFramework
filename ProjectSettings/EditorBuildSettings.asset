@@ -4,7 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Jump_Jump.unity
+    guid: 6d8cef85f893c4940a4be7b4918631a2
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 3cffaedc25d71c642b756064e2913bcb,
       type: 2}
