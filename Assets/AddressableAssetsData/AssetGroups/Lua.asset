@@ -17,11 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: dc6f965ebc6a552449525e26c6d59eb4
   m_SerializeEntries:
-  - m_GUID: 379b0ef2d43e1bd4fa5da0ccdf1f8bbd
-    m_Address: Assets/Lua
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - lua
   - m_GUID: afed0b840797ed441bce8b49e4957501
     m_Address: Assets/Jump_Jump/Lua
     m_ReadOnly: 0

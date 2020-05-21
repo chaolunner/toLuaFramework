@@ -26,23 +26,40 @@ public class LuaFacade
     [RuntimeInitializeOnLoadMethod]
     private static void Initialize()
     {
-        Addressables.LoadAssetsAsync<TextAsset>("lua", null).Completed += handle =>
+        if (!Directory.Exists(LuaConst.luaResDir))
         {
-            if (handle.Result == null) { return; }
+            Directory.CreateDirectory(LuaConst.luaResDir);
+        }
 
-            if (!Directory.Exists(LuaConst.luaResDir))
+        Addressables.LoadResourceLocationsAsync("lua", typeof(TextAsset)).Completed += handle1 =>
+        {
+            if (handle1.Result == null) { return; }
+            int waitLoadCount = handle1.Result.Count;
+            for (int i = 0; i < handle1.Result.Count; i++)
             {
-                Directory.CreateDirectory(LuaConst.luaResDir);
+                string key = handle1.Result[i].PrimaryKey;
+                Addressables.LoadAssetAsync<TextAsset>(key).Completed += handle2 =>
+                {
+                    if (handle2.Result == null) { waitLoadCount--; return; }
+                    if (key.StartsWith("ToLua"))
+                    {
+                        string path = string.Format("{0}/{1}", LuaConst.luaResDir, key.Substring(5, key.Length - 11));
+                        string dir = Path.GetDirectoryName(path);
+                        if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
+                        File.WriteAllText(path, handle2.Result.text);
+                    }
+                    else
+                    {
+                        File.WriteAllText(string.Format("{0}/{1}", LuaConst.luaResDir, handle2.Result.name), handle2.Result.text);
+                    }
+                    if (--waitLoadCount <= 0)
+                    {
+                        var go = new GameObject("LuaClient");
+                        var luaClient = go.AddComponent<LuaClient>();
+                        GameObject.DontDestroyOnLoad(go);
+                    }
+                };
             }
-
-            for (int i = 0; i < handle.Result.Count; i++)
-            {
-                File.WriteAllText(string.Format("{0}/{1}", LuaConst.luaResDir, handle.Result[i].name), handle.Result[i].text);
-            }
-
-            var go = new GameObject("LuaClient");
-            var luaClient = go.AddComponent<LuaClient>();
-            GameObject.DontDestroyOnLoad(go);
         };
     }
 

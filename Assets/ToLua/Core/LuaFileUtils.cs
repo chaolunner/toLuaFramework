@@ -48,7 +48,7 @@ namespace LuaInterface
             }
         }
 
-        //beZip = false 在search path 中查找读取lua文件。否则从外部设置过来bundel文件中读取lua文件
+        //beZip = false 在search path 中查找读取lua文件。否则从外部设置过来bundle文件中读取lua文件
         public bool beZip = false;
         protected List<string> searchPaths = new List<string>();
         protected Dictionary<string, AssetBundle> zipMap = new Dictionary<string, AssetBundle>();
