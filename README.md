@@ -18,7 +18,7 @@ Build版本toLua报错？
 
 第二种解决办法是你可以使用菜单栏下的 **Lua->Build bundle files not jit** 等类似选项，但是你仍然需要处理怎么从 **AssetBundle** 加载 **.lua** 文件的问题。
 
-第三种解决办法是这个项目正在使用的方法，你可以通过使用菜单栏下 **Tools->Build Player Content** 选项 (详情请查看 AddressablesEditor.cs 脚本)，它会在使用 **Addressables** 打包之前，做一份 **Assets/Lua** 和 **Assets/ToLua/Lua** 下的拷贝到 **Assets/Temp/ToLua** 文件夹下，并将这个文件夹添加到 **Addressables** 的 **ToLua** 组中，然后进行打包。
+第三种解决办法是这个项目正在使用的方法，你可以通过使用菜单栏下 **Tools->Build->All** 选项 (详情请查看 AddressablesEditor.cs 脚本)，它会在使用 **Addressables** 打包之前，做一份 **Assets/Lua** 和 **Assets/ToLua/Lua** 下的拷贝到 **Assets/Source/Lua** 文件夹下，并将这个文件夹添加到 **Addressables** 的 **ToLua** 组中，然后进行打包。
 
 然后在程序运行的最开始，通过 **LuaFacade** 脚本讲这些标有 **lua** 标签（label）的资源拷贝到 **Persistent** 文件夹下的某个位置，具体取决于 **LuaConst.luaResDir** 的设置。
 
@@ -31,7 +31,13 @@ Build版本toLua报错？
 
 - 怎么进行一次干净的远程加载测试？
   - **Tools->Clean->All**
-  - **Tools->Build Player Content**
+  - **Tools->Build->All**
   - 启动 Hosting Service（注意在启动之前要配置好你的 **RemoteLoadPath** ）
 
     注意格式应该像这个样子 （http://[PrivateIpAddress]:[HostingServicePort]） 我们只需要修改对应的 **PrivateIpAddress** 值就可以了，记得去掉 **/[BuildTarget]**
+
+- 怎么进行增量更新？
+  - **Tools->Build->Lua Only** （更新Lua脚本）
+  - 接着按 Addressables 正常的增量更新流程走就可以了
+    - **Build->Prepare For Content Update**
+    - **Build->Build For Content Update**

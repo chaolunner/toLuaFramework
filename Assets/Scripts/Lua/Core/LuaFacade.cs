@@ -4,6 +4,7 @@ using PureMVC.Interfaces;
 using LuaInterface;
 using UnityEngine;
 using System.IO;
+using System.Linq;
 
 public class LuaFacade
 {
@@ -71,7 +72,9 @@ public class LuaFacade
     public static LuaTable GetTable(string type)
     {
         Require(type);
-        return luaState.GetTable(type);
+        int startIndex = type.LastIndexOf('.') + 1;
+        var name = type.Substring(startIndex, type.Length - startIndex);
+        return luaState.GetTable(name);
     }
 
     public static LuaTable New(string type)

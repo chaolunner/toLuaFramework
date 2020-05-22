@@ -8,7 +8,7 @@ using System.IO;
 
 public class AddressablesEditor
 {
-    static string toLuaDir = Application.dataPath + "/Temp/ToLua";
+    static string toLuaDir = Application.dataPath + "/Source/Lua";
 
     [MenuItem("Tools/Addressables/Clean/All")]
     public static void CleanAll()
@@ -43,15 +43,15 @@ public class AddressablesEditor
         Caching.ClearCache();
     }
 
-    [MenuItem("Tools/Addressables/Build Player Content")]
-    public static void BuildPlayerContent()
+    [MenuItem("Tools/Addressables/Build/All")]
+    public static void BuildAll()
     {
-        BuildToLua();
+        BuildLua();
         AddressableAssetSettings.BuildPlayerContent();
     }
 
-    [MenuItem("Tools/Addressables/Build ToLua")]
-    public static void BuildToLua()
+    [MenuItem("Tools/Addressables/Build/Lua Only")]
+    public static void BuildLua()
     {
         if (Directory.Exists(toLuaDir))
         {
@@ -76,7 +76,7 @@ public class AddressablesEditor
             AssetDatabase.Refresh();
         }
 
-        var guid = AssetDatabase.AssetPathToGUID("Assets/Temp/ToLua");
+        var guid = AssetDatabase.AssetPathToGUID("Assets/Source/Lua");
         var toLuaEntry = AddressableAssetSettingsDefaultObject.Settings.CreateOrMoveEntry(guid, toLuaGroup);
         toLuaEntry.SetLabel("lua", true);
         toLuaEntry.address = "ToLua";

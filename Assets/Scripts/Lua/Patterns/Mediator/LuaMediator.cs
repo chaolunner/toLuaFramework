@@ -15,7 +15,7 @@ public class LuaMediator : Mediator
     public LuaMediator(string mediatorName, object viewComponent = null) : base(mediatorName, viewComponent)
     {
         mediatorClass = LuaFacade.GetTable(mediatorName);
-        mediatorObject = LuaFacade.New(mediatorName);
+        mediatorObject = mediatorClass.Invoke<LuaTable>("new");
     }
 
     public override string[] ListNotificationInterests()

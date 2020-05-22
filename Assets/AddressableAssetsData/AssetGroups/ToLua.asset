@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Lua
+  m_Name: ToLua
   m_EditorClassIdentifier: 
-  m_GroupName: Lua
+  m_GroupName: ToLua
   m_Data:
     m_SerializedData: []
-  m_GUID: dc6f965ebc6a552449525e26c6d59eb4
+  m_GUID: 627bfb06630963f4aa56070e9730f184
   m_SerializeEntries:
-  - m_GUID: afed0b840797ed441bce8b49e4957501
-    m_Address: Assets/Jump_Jump/Lua
+  - m_GUID: 4204f14442327f24e89348396d7d0455
+    m_Address: ToLua
     m_ReadOnly: 0
     m_SerializedLabels:
     - lua
@@ -26,5 +26,5 @@ MonoBehaviour:
   m_Settings: {fileID: 11400000, guid: 943cb6d64b41a33479c44ebeab5384bf, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 06e4748e3c21bd546be74fbf5cc1fc65, type: 2}
-    - {fileID: 11400000, guid: ffe4f79bf8dba6e45900fff72eebe339, type: 2}
+    - {fileID: 11400000, guid: 6938cd7251a06d849b8c1a7c55e515a8, type: 2}
+    - {fileID: 11400000, guid: adb08d5406a3009428321d1080108db7, type: 2}

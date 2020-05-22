@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: 
-  m_DefaultGroup: dc6f965ebc6a552449525e26c6d59eb4
+  m_DefaultGroup: f65aed406e9568941b3224136ca4e36f
   m_BuildRemoteCatalog: 1
   m_RemoteCatalogBuildPath:
     m_Id: 5ab588007e9e6ed4e945ee7908f2dd4c
@@ -22,7 +22,7 @@ MonoBehaviour:
   m_GroupAssets:
   - {fileID: 11400000, guid: 73d5a9bcbc83f224992031c4242eb1a3, type: 2}
   - {fileID: 11400000, guid: 0f52c26a56582be49bd9e5bdbe056924, type: 2}
-  - {fileID: 11400000, guid: 1ca70fce4a2d0774ebc88010c68ffd7c, type: 2}
+  - {fileID: 11400000, guid: 1d9068ddbeae4a44d8893dfccebb404c, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -86,25 +86,25 @@ MonoBehaviour:
         m_SerializedData:
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.Int32
-          m_Data: 62353
+          m_Data: 55015
           m_Key: HostingServicePort
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.String
-          m_Data: ServerData/StandaloneWindows64
+          m_Data: ServerData/StandaloneWindows64;Library/com.unity.addressables/StreamingAssetsCopy/aa/Windows/StandaloneWindows64
           m_Key: ContentRoot
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.Boolean
-          m_Data: False
+          m_Data: True
           m_Key: IsEnabled
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.String
-          m_Data: My Hosting Service 2
+          m_Data: My Hosting Service 3
           m_Key: DescriptiveName
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.Int32
-          m_Data: 2
+          m_Data: 3
           m_Key: InstanceId
     m_Settings: {fileID: 11400000}
-    m_NextInstanceId: 3
+    m_NextInstanceId: 4
     m_RegisteredServiceTypeRefs:
     - UnityEditor.AddressableAssets.HostingServices.HttpHostingService, Unity.Addressables.Editor

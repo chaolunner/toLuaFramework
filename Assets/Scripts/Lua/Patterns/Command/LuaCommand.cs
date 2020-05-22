@@ -18,7 +18,7 @@ public class LuaCommand : SimpleCommand
     {
         CommandName = commandName;
         commandClass = LuaFacade.GetTable(commandName);
-        commandObject = LuaFacade.New(commandName);
+        commandObject = commandClass.Invoke<LuaTable>("new");
     }
 
     public override void Execute(INotification notification)

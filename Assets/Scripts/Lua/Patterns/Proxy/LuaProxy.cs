@@ -14,7 +14,7 @@ public class LuaProxy : Proxy
     public LuaProxy(string proxyName, object data = null) : base(proxyName, data)
     {
         proxyClass = LuaFacade.GetTable(proxyName);
-        proxyObject = LuaFacade.New(proxyName);
+        proxyObject = proxyClass.Invoke<LuaTable>("new");
     }
 
     public override void OnRegister()

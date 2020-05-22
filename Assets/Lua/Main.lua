@@ -5,9 +5,9 @@ function Main()
     Action = require("Action")
     Array = require("Array")
     Pool = require("Pool")
-    Command = require("Command")
-    Mediator = require("Mediator")
-    Proxy = require("Proxy")
+    Command = require("Patterns.Command")
+    Mediator = require("Patterns.Mediator")
+    Proxy = require("Patterns.Proxy")
 
     GameObject = UnityEngine.GameObject
     Transform = UnityEngine.Transform
@@ -16,7 +16,7 @@ function Main()
     Camera = UnityEngine.Camera
     MaterialPropertyBlock = UnityEngine.MaterialPropertyBlock
 
-    LuaFacade.RegisterCommand("StartUpCommand", "StartUp")
+    LuaFacade.RegisterCommand("Patterns.Command.StartUpCommand", "StartUp")
     LuaFacade.SendNotification("StartUp")
 
     print("logic start")

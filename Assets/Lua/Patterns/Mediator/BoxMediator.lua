@@ -30,8 +30,8 @@ end
 
 function BoxMediator:OnRegister()
     self:super("OnRegister")
-    LuaFacade.RegisterProxy("BoxProxy")
-    self.boxProxy = LuaFacade.RetrieveProxy("BoxProxy")
+    LuaFacade.RegisterProxy("Patterns.Proxy.BoxProxy")
+    self.boxProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.BoxProxy")
     table.insert(self.boxProxy.OnGenerateBox, Action.new(self, BoxMediator.GenerateBox))
 end
 

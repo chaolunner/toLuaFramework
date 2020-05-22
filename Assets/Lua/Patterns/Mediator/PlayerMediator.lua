@@ -14,8 +14,8 @@ end
 
 function PlayerMediator:OnRegister()
     self:super("OnRegister")
-    LuaFacade.RegisterProxy("PlayerProxy")
-    self.playerProxy = LuaFacade.RetrieveProxy("PlayerProxy")
+    LuaFacade.RegisterProxy("Patterns.Proxy.PlayerProxy")
+    self.playerProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.PlayerProxy")
     table.insert(self.playerProxy.OnSpawn, Action.new(self, PlayerMediator.Spawn))
 end
 

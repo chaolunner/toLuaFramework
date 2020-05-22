@@ -19,8 +19,8 @@ end
 
 function CameraMediator:OnRegister()
     self:super("OnRegister")
-    LuaFacade.RegisterProxy("CameraProxy")
-    self.cameraProxy = LuaFacade.RetrieveProxy("CameraProxy")
+    LuaFacade.RegisterProxy("Patterns.Proxy.CameraProxy")
+    self.cameraProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.CameraProxy")
 end
 
 function CameraMediator:CameraMove(player)
