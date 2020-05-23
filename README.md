@@ -39,5 +39,5 @@ Build版本toLua报错？
 - 怎么进行增量更新？
   - **Tools->Build->Lua Only** （更新Lua脚本）
   - 接着按 Addressables 正常的增量更新流程走就可以了
-    - **Build->Prepare For Content Update**
-    - **Build->Build For Content Update**
+    - **Tools->Check for Content Update Restrications**
+    - **Build->Update a Previous Build**

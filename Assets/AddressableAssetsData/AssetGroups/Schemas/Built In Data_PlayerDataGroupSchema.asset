@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1487f5d688e4f94f828f879d599dbdc, type: 3}
-  m_Name: aae0c13db42f03e4dae634af5e393fb8_PlayerDataGroupSchema
+  m_Name: Built In Data_PlayerDataGroupSchema
   m_EditorClassIdentifier: 
   m_Group: {fileID: 0}
   m_IncludeResourcesFolders: 1

@@ -15,16 +15,11 @@ MonoBehaviour:
   m_GroupName: ToLua
   m_Data:
     m_SerializedData: []
-  m_GUID: 627bfb06630963f4aa56070e9730f184
-  m_SerializeEntries:
-  - m_GUID: 4204f14442327f24e89348396d7d0455
-    m_Address: ToLua
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - lua
+  m_GUID: f2745feabd47a114da9623c82a37fd2a
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 943cb6d64b41a33479c44ebeab5384bf, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 6938cd7251a06d849b8c1a7c55e515a8, type: 2}
-    - {fileID: 11400000, guid: adb08d5406a3009428321d1080108db7, type: 2}
+    - {fileID: 11400000, guid: 5182c6a4c63c7364594607a812672d30, type: 2}
+    - {fileID: 11400000, guid: d9ab57924f3cd8e4ba046cb51e7fc4c9, type: 2}

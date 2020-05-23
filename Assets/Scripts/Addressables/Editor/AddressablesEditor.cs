@@ -9,6 +9,7 @@ using System.IO;
 public class AddressablesEditor
 {
     static string toLuaDir = Application.dataPath + "/Source/Lua";
+    static string addressablesDir = Application.persistentDataPath + "/com.unity.addressables";
 
     [MenuItem("Tools/Addressables/Clean/All")]
     public static void CleanAll()
@@ -17,11 +18,6 @@ public class AddressablesEditor
         if (Directory.Exists(remoteBuildPath))
         {
             Directory.Delete(remoteBuildPath, true);
-        }
-
-        if (Directory.Exists(LuaConst.luaResDir))
-        {
-            Directory.Delete(LuaConst.luaResDir, true);
         }
 
         if (Directory.Exists(toLuaDir))
@@ -40,6 +36,16 @@ public class AddressablesEditor
     [MenuItem("Tools/Addressables/Clean/Cache")]
     public static void CleanCache()
     {
+        if (Directory.Exists(addressablesDir))
+        {
+            Directory.Delete(addressablesDir, true);
+        }
+
+        if (Directory.Exists(LuaConst.luaResDir))
+        {
+            Directory.Delete(LuaConst.luaResDir, true);
+        }
+
         Caching.ClearCache();
     }
 
