@@ -106,7 +106,7 @@ Build版本toLua报错？
     luaL_Reg libs[] = {
         { "pack",     Lbuf_pack     },
         { "unpack",   Lslice_unpack },
-#define ENTRY(name) { #name, Lpb_##name }
+  #define ENTRY(name) { #name, Lpb_##name }
         ENTRY(clear),
         ENTRY(load),
         ENTRY(loadfile),
@@ -125,7 +125,7 @@ Build版本toLua报错？
         ENTRY(result),
         ENTRY(option),
         ENTRY(state),
-#undef  ENTRY
+  #undef  ENTRY
         { NULL, NULL }
     };
     luaL_Reg meta[] = {
