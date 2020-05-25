@@ -87,3 +87,92 @@ Build版本toLua报错？
 
   - 打开 Addressables->Profiles，新建一个 Profile 命名为 XAMPP，并将 RemoteLoadPath 设置为 http://chaolunner.toluaframework.com/[BuildTarget]
   - 打开 Addressables->Groups，将 Profile 切换为 XAMPP，并做一次 Build，将打包出来的文件夹（默认是项目根目录下的 ServerData 文件夹）复制到 htdocs 文件夹下，并重命名为 chaolunner.toluaframework.com
+
+集成 lua-protobuf 第三方pb3解析库
+---
+
+- [tolua_runtime](https://github.com/topameng/tolua_runtime) 源码下载
+- [lua-protobuf](https://github.com/starwing/lua-protobuf) 源码下载
+- [配置好的Msys2下载](https://pan.baidu.com/s/1c2JzvDQ)
+- 命令行下跳转到 msys2 的目录下：如 c:\msys2 目录，**cd c:\msys2**
+- 执行 **mingw32_shell.bat** 启动32位编译环境，只能编译32位的库
+- 执行 **mingw64_shell.bat** 启动64位编译环境，只能编译64位的库
+- 32位环境和64位环境不能交叉编译
+- 将 lua-protobuf 中的两个文件解析文件（**pb.c 和 pb.h**）替换到 tolua_runtime 库中
+- 将 **pb.c** 中的 **luaopen_pb** 函数替换为
+
+  ```
+  LUALIB_API int luaopen_pb(lua_State *L) {
+    luaL_Reg libs[] = {
+        { "pack",     Lbuf_pack     },
+        { "unpack",   Lslice_unpack },
+#define ENTRY(name) { #name, Lpb_##name }
+        ENTRY(clear),
+        ENTRY(load),
+        ENTRY(loadfile),
+        ENTRY(encode),
+        ENTRY(decode),
+        ENTRY(types),
+        ENTRY(fields),
+        ENTRY(type),
+        ENTRY(field),
+        ENTRY(typefmt),
+        ENTRY(enum),
+        ENTRY(defaults),
+        ENTRY(hook),
+        ENTRY(tohex),
+        ENTRY(fromhex),
+        ENTRY(result),
+        ENTRY(option),
+        ENTRY(state),
+#undef  ENTRY
+        { NULL, NULL }
+    };
+    luaL_Reg meta[] = {
+        { "__gc", Lpb_delete },
+        { "setdefault", Lpb_state },
+        { NULL, NULL }
+    };
+    if (luaL_newmetatable(L, PB_STATE)) {
+        luaL_setfuncs(L, meta, 0);
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -2, "__index");
+    }
+    #if LUA_VERSION_NUM < 502
+    luaL_register(L, "pb", libs);
+    #else
+    luaL_newlib(L, libs);
+    #endif
+    return 1;
+  }
+  ```
+
+- 将 lua-protobuf 中的 **protoc.lua**、**serpent.lua**、**luaunit.lua** 以及 **test.lua** 复制到项目中的Lua文件夹下
+- 编译库
+  - windows库
+    - 32位
+      - 启动 msys2，32位编译环境，跳转到 tolua_runtime 目录下
+      - 执行 **./build_win32.sh**
+      - 在 **Plugins\x86** 目录下看见 **tolua.dll** 文件，便编译成功
+    - 64位
+      - 启动 msys2，64位编译环境，跳转到 tolua_runtime 目录下
+      - 执行 **./build_win64.sh**
+      - 在 **Plugins\x86_64** 目录下看见 **tolua.dll** 文件，便编译成功
+  - Android库
+    - 下载[NDK](https://developer.android.google.cn/ndk/downloads/older_releases.html)（建议使用 android-ndk-r15c 64位版本）
+    - 下载完成后解压到不包含中文和空格的目录下
+    - 将 **build_arm.sh**、**build_x86.sh** 以及 **build_arm64.sh** 文件中的 **NDK** 路径改为你解压后的NDK的路径，并将所有 **$NDK/ndk-build** 替换为 **$NDK/ndk-build.cmd**
+    - 将 **link_arm64.bat** 文件中的 ndkPath 修改为你解压后的NDK的路径
+    - armeabi-v7a
+      - 启动 msys2，32位编译环境，跳转到 tolua_runtime 目录下
+      - 执行 **./build_arm.sh**
+      - 在 **Plugins\Android\libs\armeabi-v7a** 目录下看见 **libtolua.so** 文件，便编译成功
+    - armeabi-v7a
+      - 启动 msys2，32位编译环境，跳转到 tolua_runtime 目录下
+      - 执行 **./build_x86.sh**
+      - 在 **Plugins\Android\libs\x86** 目录下看见 **libtolua.so** 文件，便编译成功
+    - armeabi-v7a
+      - 启动 msys2，64位编译环境，跳转到 tolua_runtime 目录下
+      - 执行 **./build_arm64.sh**
+      - 在 **Plugins\Android\libs\arm64-v8a** 目录下看见 **libtolua.so** 文件，便编译成功
+

@@ -9,6 +9,8 @@ function Main()
     Mediator = require("Patterns.Mediator")
     Proxy = require("Patterns.Proxy")
 
+    require("lua-protobuf.test")
+
     GameObject = UnityEngine.GameObject
     Transform = UnityEngine.Transform
     Random = UnityEngine.Random
