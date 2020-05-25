@@ -41,3 +41,49 @@ Build版本toLua报错？
   - 接着按 Addressables 正常的增量更新流程走就可以了
     - **Tools->Check for Content Update Restrications**
     - **Build->Update a Previous Build**
+
+- 怎么发布到服务器？
+  - 下载 [XAMPP](https://www.apachefriends.org/download.html) Apache Http Server
+  - 域名映射
+    - 先修改hosts，在hosts中添加你要绑定在Apache的多个域名
+
+      **C:/WINDOWS/system32/drivers/etc/hosts**
+
+    - 然后在最底部添加您要绑定的域名，格式如下：
+
+      **127.0.0.1 chaolunner.toluaframework.com**
+
+      添加完毕后，保存即可。Win7/Win10 遇到hosts文件无法修改，先把hosts文件复制到桌面，在桌面改好后再复制到 etc 文件夹下进行替换。
+  - 虚拟主机绑定域名
+    - 打开 Apache 配置文件 xampp/apache/conf/extra/httpd-vhosts.conf
+
+      然后在httpd-vhosts.conf最底部直接添加以下代码：
+
+      ```
+      <VirtualHost *:80>
+        ServerAdmin webmaster@chaolunner.toluaframework.comco
+        DocumentRoot "<你安装Xampp的路径>/htdocs/chaolunner.toluaframework.com"
+        ServerName chaolunner.toluaframework.com
+      </VirtualHost>
+      ```
+
+      以上配置信息含义如下：
+
+      - ServerAdmin 表示该网站的管理者。
+      - DocumentRoot 表示你要绑定的网站的绝对路径（注意需要让PHP访问的到，配置到Xampp下的htdocs目录即可）
+      - ServerName 这个就是你要绑定的域名了。如果是本地的，绑定前需要配置之前提到的 hosts 文件。
+      
+  - 完成上述步骤之后，在 XAMPP 中启动 Apache 服务，并在浏览器中 输入 http://chaolunner.toluaframework.com 就可以访问到 DocumentRoot （注意，chaolunner.toluaframework.com 这个文件夹是之后需要添加的，如果你要测试这一步的正确性，你可以先创建一个空的同名文件夹）
+  - 但是，你也会发现使用 localhost 直接定位到了 DocumentRoot 下的内容，而我们期望的是还是定位到 <你安装Xampp的路径>/htdocs/ 的内容。也就是默认的httpd的设置失效了。解决办法就是把 localhost 的配置在 httpd-vhosts.conf 里配置回来。
+
+    再在 httpd-vhosts.conf 文件的最后添加上如下内容，并重启 Apache。
+
+    ```
+    <VirtualHost *:80>
+      DocumentRoot "<你安装Xampp的路径>/htdocs/"
+      ServerName localhost
+    </VirtualHost>
+    ```
+
+  - 打开 Addressables->Profiles，新建一个 Profile 命名为 XAMPP，并将 RemoteLoadPath 设置为 http://chaolunner.toluaframework.com/[BuildTarget]
+  - 打开 Addressables->Groups，将 Profile 切换为 XAMPP，并做一次 Build，将打包出来的文件夹（默认是项目根目录下的 ServerData 文件夹）复制到 htdocs 文件夹下，并重命名为 chaolunner.toluaframework.com
