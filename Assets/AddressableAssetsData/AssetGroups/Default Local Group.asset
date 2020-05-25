@@ -17,13 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 91aee5656d14bff4db39a3b89bb720bb
   m_SerializeEntries:
-  - m_GUID: 41f9fcad4e07e5241b5ce9bba44b1ce6
-    m_Address: Assets/Jump_Jump/Materials
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    m_mainAssetType: 
-    m_MainAsset: {fileID: 0}
-    m_TargetAsset: {fileID: 0}
   - m_GUID: 4af276bd94cea62439f2b08bedefe764
     m_Address: Jump_Jump/Player
     m_ReadOnly: 0

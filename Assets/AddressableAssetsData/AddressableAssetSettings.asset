@@ -46,6 +46,20 @@ MonoBehaviour:
         m_Value: ServerData/[BuildTarget]
       - m_Id: 0fd3f12d1b835404889134db83199316
         m_Value: http://[PrivateIpAddress_1]:[HostingServicePort]
+    - m_InheritedParent: 
+      m_Id: a713a9f1a9d97164ca27658914cef11b
+      m_ProfileName: XAMPP
+      m_Values:
+      - m_Id: 159da94d1e0276b48ae8b245422bb287
+        m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: 4533147c39cdeae43af7d82afb1f761b
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: e3a9046f25211ba419d66b5cf860fe64
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: 35534e0a19329a44d8e8bb95b1990d7e
+        m_Value: ServerData/[BuildTarget]
+      - m_Id: 0fd3f12d1b835404889134db83199316
+        m_Value: http://chaolunner.toluaframework.com/[BuildTarget]
     m_ProfileEntryNames:
     - m_Id: 159da94d1e0276b48ae8b245422bb287
       m_Name: BuildTarget
@@ -80,7 +94,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: abd024ee5f5d76645b3b07dc5f23b64e, type: 2}
   - {fileID: 11400000, guid: d14d986987d90ba4ab10a09f4132574d, type: 2}
   - {fileID: 11400000, guid: cd7bb80eff3964a49a9622a05f173602, type: 2}
-  m_ActiveProfileId: 33686b89db9ce1d4ca90e86afa5aea93
+  m_ActiveProfileId: a713a9f1a9d97164ca27658914cef11b
   m_HostingServicesManager:
     m_HostingServiceInfos:
     - classRef: UnityEditor.AddressableAssets.HostingServices.HttpHostingService,
@@ -97,7 +111,7 @@ MonoBehaviour:
           m_Key: ContentRoot
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.Boolean
-          m_Data: True
+          m_Data: False
           m_Key: IsEnabled
         - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
           m_ClassName: System.String
