@@ -1,7 +1,8 @@
 local pb = require "pb"
 local protoc = require "lua-protobuf/protoc"
 
--- load schema from text
+--[=[
+-- load schema from text (just for demo, use protoc.new() in real world)
 assert(
     protoc:load [[
         syntax = "proto3";
@@ -17,6 +18,7 @@ assert(
             repeated Phone contacts = 4;
         } ]]
 )
+--]=]
 
 -- lua table data
 local data = {
@@ -28,9 +30,22 @@ local data = {
     }
 }
 
+--[=[
 -- encode lua table data into binary format in lua string and return
 local bytes = assert(pb.encode("Person", data))
 print(pb.tohex(bytes))
+
+-- and decode the binary data back into lua table
+local data2 = assert(pb.decode("Person", bytes))
+print(require "lua-protobuf/serpent".block(data2))
+--]=]
+
+load_pb("test") -- 已经在 Main.lua 封装成全局方法
+
+-- encode lua table data into binary format in lua string and return
+local bytes = assert(pb.encode("Person", data))
+print(pb.tohex(bytes))
+
 -- and decode the binary data back into lua table
 local data2 = assert(pb.decode("Person", bytes))
 print(require "lua-protobuf/serpent".block(data2))

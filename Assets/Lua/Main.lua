@@ -8,6 +8,7 @@ function Main()
     Command = require("Patterns.Command")
     Mediator = require("Patterns.Mediator")
     Proxy = require("Patterns.Proxy")
+    pb = require("pb")
 
     require("lua-protobuf.test")
 
@@ -43,4 +44,26 @@ function GetOrCreateComponent(go, type)
         component = go:AddComponent(type)
     end
     return component
+end
+
+function file_exists(path)
+    local file = io.open(path, "rb")
+    if file then
+        file:close()
+    end
+    return file ~= nil
+end
+
+function load_pb(name)
+    local pathMap = {UnityEngine.Application.persistentDataPath, "/Proto/", name, ".pb"}
+    local path = table.concat(pathMap)
+    if (file_exists(path)) then
+        pb.loadfile(path)
+    else
+        pathMap[1] = UnityEngine.Application.dataPath
+        path = table.concat(pathMap)
+        if (file_exists(path)) then
+            pb.loadfile(path)
+        end
+    end
 end

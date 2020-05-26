@@ -176,3 +176,15 @@ Build版本toLua报错？
       - 执行 **./build_arm64.sh**
       - 在 **Plugins\Android\libs\arm64-v8a** 目录下看见 **libtolua.so** 文件，便编译成功
 
+proto 生成 .pb 文件并加载
+---
+
+- 下载 [Visual Studio Code](https://code.visualstudio.com/Download)
+- 在应用商店中搜索 protobuf 插件，选择 [vscode-proto3](https://github.com/zxh0/vscode-proto3) 安装
+- 到刚刚安装的插件目录，vscode的插件放置的目录，一般在C:\Users\<UserName>\.vscode\extensions下
+- 在插件的目录下有一个 example 文件夹，我们把 **.vscode** 文件夹和 **build.bat** 文件拷贝到自己的工程的目录下（也可以直接复制 toLuaFramework/protobuf 下，配置好的文件）
+- 如果你不是直接复制的 toLuaFramework/protobuf 文件夹，那么你还需要到谷歌的 [protobuf](https://github.com/protocolbuffers/protobuf/releases) 下载 **win64** 版本
+- 需要修改 **.vscode/settings.json** 文件和 **build.bat** 文件（具体可以参考 toLuaFramework/protobuf 下的相应文件）
+- 在 vscode 终端中运行 build.bat，并在相应文件夹下生成 .pb 文件就算成功（toLuaFramework项目的生成路径在 toLuaFramework/Assets/Proto 文件夹下）
+- 加载可以参考 **Assets/Lua/test.lua** 脚本（注,常用加载方式：**assert(pb.loadfile "Assets/Proto/test.pb")**）
+

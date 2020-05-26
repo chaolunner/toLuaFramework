@@ -1,0 +1,9 @@
+{
+    "protoc": {
+        "path": "${workspaceRoot}/protoc-3.12.1-win64/bin/protoc.exe",
+        "options": [
+            "--proto_path=${workspaceRoot}/protos",
+            "-o=${workspaceRoot}/../Assets/Proto"
+        ]
+    }
+}
