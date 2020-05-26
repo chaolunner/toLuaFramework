@@ -20,7 +20,8 @@ public class AddressablesUpdater : MonoBehaviour
     public static event Action OnCompleted;
     public static event Action<long, long> OnDownload;
     public static event Action<long> OnDownloadCompleted;
-    public static Func<RequestDownloadFeedback> OnRequestDownload;
+    public static Func<IEnumerator> AfterDownloadHandle;
+    public static Func<RequestDownloadFeedback> RequestDownloadHandle;
 
     private static string addressablesDir = Application.persistentDataPath + "/" + addressablesFolder;
     private static string backupDir = Application.persistentDataPath + "/" + backupFolder;
@@ -76,11 +77,11 @@ public class AddressablesUpdater : MonoBehaviour
             }
         }
         if (downloadSize <= 0) { yield break; }
-        while (OnRequestDownload?.Invoke() == RequestDownloadFeedback.None)
+        while (RequestDownloadHandle?.Invoke() == RequestDownloadFeedback.None)
         {
             yield return null;
         }
-        if (OnRequestDownload?.Invoke() == RequestDownloadFeedback.Disagree)
+        if (RequestDownloadHandle?.Invoke() == RequestDownloadFeedback.Disagree)
         {
             LoadCatalogs();
             for (int i = 0; i < locators.Count; i++)
@@ -126,6 +127,7 @@ public class AddressablesUpdater : MonoBehaviour
             }
         }
         OnDownloadCompleted?.Invoke(downloadSize);
+        yield return StartCoroutine(AfterDownloadHandle?.Invoke());
     }
 
     private string[] GetCatalogs(string path, string suffix, SearchOption searchOption)

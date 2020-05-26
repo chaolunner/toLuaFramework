@@ -1,5 +1,6 @@
 ﻿using UnityEngine.AddressableAssets;
 using PureMVC.Patterns.Observer;
+using System.Collections;
 using PureMVC.Interfaces;
 using LuaInterface;
 using UnityEngine;
@@ -23,43 +24,39 @@ public class LuaFacade
         }
     }
 
-    public static void Initialize()
+    public static IEnumerator UpdateLocalScripts()
     {
         if (!Directory.Exists(LuaConst.luaResDir))
         {
             Directory.CreateDirectory(LuaConst.luaResDir);
         }
 
-        Addressables.LoadResourceLocationsAsync("lua", typeof(TextAsset)).Completed += resHandle =>
+        var resHandle = Addressables.LoadResourceLocationsAsync("lua", typeof(TextAsset));
+        yield return resHandle;
+        for (int i = 0; i < resHandle.Result.Count; i++)
         {
-            if (resHandle.Result == null) { return; }
-            int waitLoadCount = resHandle.Result.Count;
-            for (int i = 0; i < resHandle.Result.Count; i++)
+            string key = resHandle.Result[i].PrimaryKey;
+            var loadHandle = Addressables.LoadAssetAsync<TextAsset>(key);
+            yield return loadHandle;
+            if (key.StartsWith("ToLua"))
             {
-                string key = resHandle.Result[i].PrimaryKey;
-                Addressables.LoadAssetAsync<TextAsset>(key).Completed += loadHandle =>
-                {
-                    if (loadHandle.Result == null) { waitLoadCount--; return; }
-                    if (key.StartsWith("ToLua"))
-                    {
-                        string path = string.Format("{0}/{1}", LuaConst.luaResDir, key.Substring(5, key.Length - 11));
-                        string dir = Path.GetDirectoryName(path);
-                        if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
-                        File.WriteAllText(path, loadHandle.Result.text);
-                    }
-                    else
-                    {
-                        File.WriteAllText(string.Format("{0}/{1}", LuaConst.luaResDir, loadHandle.Result.name), loadHandle.Result.text);
-                    }
-                    if (--waitLoadCount <= 0)
-                    {
-                        var go = new GameObject("LuaClient");
-                        var luaClient = go.AddComponent<LuaClient>();
-                        GameObject.DontDestroyOnLoad(go);
-                    }
-                };
+                string path = string.Format("{0}/{1}", LuaConst.luaResDir, key.Substring(5, key.Length - 11));
+                string dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
+                File.WriteAllText(path, loadHandle.Result.text);
             }
-        };
+            else
+            {
+                File.WriteAllText(string.Format("{0}/{1}", LuaConst.luaResDir, loadHandle.Result.name), loadHandle.Result.text);
+            }
+        }
+    }
+
+    public static void Initialize()
+    {
+        var go = new GameObject("LuaClient");
+        go.AddComponent<LuaClient>();
+        GameObject.DontDestroyOnLoad(go);
     }
 
     public static void Require(string type)
