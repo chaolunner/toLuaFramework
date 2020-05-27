@@ -8,16 +8,20 @@ end
 
 function BoxProxy:OnRegister()
     self:super("OnRegister")
-    LuaAddressables.LoadGameObjectAsync("Jump_Jump/Box", BoxProxy, self, "GenerateBox")
+    coroutine.start(self.GenerateBoxAsync, self)
 end
 
 function BoxProxy:OnRemove()
     self:super("OnRemove")
 end
 
-function BoxProxy:GenerateBox(prefab)
+function BoxProxy:GenerateBoxAsync()
+    local handle = LuaAddressables.LoadAssetAsync("Jump_Jump/Box.prefab")
+    while not handle.IsDone do
+        coroutine.step()
+    end
     for i = 1, 10 do
-        self.pool:Push(GameObject.Instantiate(prefab))
+        self.pool:Push(GameObject.Instantiate(handle.Result))
     end
 
     if self.OnGenerateBox then

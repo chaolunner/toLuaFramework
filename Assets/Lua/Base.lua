@@ -38,6 +38,8 @@ function Base:init()
                     else
                         Debugger.LogError("For the <b>" .. k .. "</b> property, you have implemented get" .. k:gsub("^%l", string.upper) .. "() function. If you want to assign it, please implement <b>set" .. k:gsub("^%l", string.upper) .. "()</b> function.")
                     end
+                elseif "number" == type(k) and self.elements then
+                    self.elements[k] = v
                 else
                     t[k] = v
                 end

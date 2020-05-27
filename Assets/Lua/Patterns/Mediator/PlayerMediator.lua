@@ -26,9 +26,8 @@ end
 function PlayerMediator:Spawn()
     self.playerProxy.player.transform.position = Vector3(0, 0.25, 0)
     GetOrCreateComponent(self.playerProxy.player, typeof(LuaCollisionEnterListener)):AddListener(
-        PlayerMediator,
-        self,
-        "OnCollisionEnter"
+        self.OnCollisionEnter,
+        self
     )
     self.OnUpdate = UpdateBeat:CreateListener(PlayerMediator.Update, self)
     UpdateBeat:AddListener(self.OnUpdate)

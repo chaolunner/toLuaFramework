@@ -1,15 +1,12 @@
 Array = class(Base)
 
 function Array:ctor(...)
+    self.len = select("#", ...)
     self.elements = {...}
 end
 
 function Array:getLength()
-    local length = 0
-    for k, v in pairs(self.elements) do
-        length = length + 1
-    end
-    return length
+    return self.len
 end
 
 function Array:Contains(obj)
@@ -24,6 +21,7 @@ end
 function Array:Add(obj)
     if self:Contains(obj) then
     else
+        self.len = self.len + 1
         table.insert(self.elements, obj)
     end
 end
@@ -39,6 +37,7 @@ function Array:Remove(obj)
 end
 
 function Array:RemoveAt(pos)
+    self.len = self.len - 1
     table.remove(self.elements, pos)
 end
 
@@ -48,6 +47,7 @@ function Array:Clear(pos)
         self:RemoveAt(i)
         i = i + 1
     end
+    self.len = 0
 end
 
 return Array

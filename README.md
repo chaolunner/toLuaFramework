@@ -2,6 +2,13 @@
 
 Created by chaolun
 
+框架的特性
+---
+
+- 继承自 **Base.lua** 的类（**class(Base)**）
+  - 可以使用 **get/set** ，比如你在 A 类中实现了一个 **function getLength() return 0 end** 方法，那么你可以直接使用 local a = A.new() print(a.length) 来调用该方法，且你只能通过实现 **function setLength()** 方法，才能设置 **a.length** 的值。
+  - 可以隐式调用 **table elements**，如果你的类中有 **table elements**，那么你可以直接使用 local a = A.new() print(a[0])，这个和调用 print(a.elements[0]) 是一样的。
+
 toLua 生成 Wrap 报错解决方案
 ---
 

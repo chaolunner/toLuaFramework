@@ -7,22 +7,20 @@ public class LuaAddressablesWrap
 	public static void Register(LuaState L)
 	{
 		L.BeginStaticLibs("LuaAddressables");
-		L.RegFunction("LoadGameObjectAsync", LoadGameObjectAsync);
+		L.RegFunction("LoadAssetAsync", LoadAssetAsync);
 		L.EndStaticLibs();
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int LoadGameObjectAsync(IntPtr L)
+	static int LoadAssetAsync(IntPtr L)
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 4);
+			ToLua.CheckArgsCount(L, 1);
 			object arg0 = ToLua.ToVarObject(L, 1);
-			LuaTable arg1 = ToLua.CheckLuaTable(L, 2);
-			LuaTable arg2 = ToLua.CheckLuaTable(L, 3);
-			string arg3 = ToLua.CheckString(L, 4);
-			LuaAddressables.LoadGameObjectAsync(arg0, arg1, arg2, arg3);
-			return 0;
+			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> o = LuaAddressables.LoadAssetAsync(arg0);
+			ToLua.PushValue(L, o);
+			return 1;
 		}
 		catch (Exception e)
 		{

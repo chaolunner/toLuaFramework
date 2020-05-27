@@ -35,6 +35,10 @@ function BoxMediator:OnRegister()
     table.insert(self.boxProxy.OnGenerateBox, Action.new(self, BoxMediator.GenerateBox))
 end
 
+function BoxMediator:OnRemove()
+    self:super("OnRemove")
+end
+
 function BoxMediator:GenerateBox()
     table.insert(self.boxProxy.pool.OnClear, Action.new(self, BoxMediator.ClearBox))
     self.boxProxy.pool:Clear()

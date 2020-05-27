@@ -6,15 +6,19 @@ end
 
 function PlayerProxy:OnRegister()
     self:super("OnRegister")
-    LuaAddressables.LoadGameObjectAsync("Jump_Jump/Player", PlayerProxy, self, "Spawn")
+    coroutine.start(self.SpawnAsync, self)
 end
 
 function PlayerProxy:OnRemove()
     self:super("OnRemove")
 end
 
-function PlayerProxy:Spawn(prefab)
-    self.player = GameObject.Instantiate(prefab)
+function PlayerProxy:SpawnAsync()
+    local handle = LuaAddressables.LoadAssetAsync("Jump_Jump/Player.prefab")
+    while not handle.IsDone do
+        coroutine.step()
+    end
+    self.player = GameObject.Instantiate(handle.Result)
     self.rigidbody = self.player:GetComponent("Rigidbody")
     self.head = self.player.transform:Find("Head")
     self.body = self.player.transform:Find("Body")

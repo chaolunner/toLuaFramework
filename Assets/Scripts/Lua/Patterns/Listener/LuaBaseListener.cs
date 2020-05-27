@@ -5,57 +5,37 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class LuaBaseListener : MonoBehaviour
 {
-    private Dictionary<LuaTable, Dictionary<LuaTable, string>> listenerMap = new Dictionary<LuaTable, Dictionary<LuaTable, string>>();
+    private Dictionary<LuaFunction, LuaTable> listenerMap = new Dictionary<LuaFunction, LuaTable>();
 
     protected void Call<T>(T arg)
     {
         var e1 = listenerMap.GetEnumerator();
         while (e1.MoveNext())
         {
-            var cls = e1.Current.Key;
-            if (cls == null) { continue; }
-            var e2 = e1.Current.Value.GetEnumerator();
-            while (e2.MoveNext())
-            {
-                var obj = e2.Current.Key;
-                var name = e2.Current.Value;
-                if (obj != null && !string.IsNullOrEmpty(name))
-                {
-                    cls.Call(name, obj, arg);
-                }
-            }
+            var func = e1.Current.Key;
+            if (func == null) { continue; }
+            var obj = e1.Current.Value;
+            func.Call(obj, arg);
         }
     }
 
-    public void AddListener(LuaTable cls, LuaTable obj, string name)
+    public void AddListener(LuaFunction func, LuaTable obj)
     {
-        if (listenerMap.ContainsKey(cls))
+        if (listenerMap.ContainsKey(func))
         {
-            if (!listenerMap[cls].ContainsKey(obj) && !string.IsNullOrEmpty(name))
-            {
-                listenerMap[cls].Add(obj, name);
-            }
+            listenerMap[func] = obj;
         }
         else
         {
-            var dict = new Dictionary<LuaTable, string>();
-            dict.Add(obj, name);
-            listenerMap.Add(cls, dict);
+            listenerMap.Add(func, obj);
         }
     }
 
-    public void RemoveListener(LuaTable cls, LuaTable obj)
+    public void RemoveListener(LuaFunction func)
     {
-        if (listenerMap.ContainsKey(cls))
+        if (listenerMap.ContainsKey(func))
         {
-            if (obj == null)
-            {
-                listenerMap.Remove(cls);
-            }
-            else if (listenerMap[cls].ContainsKey(obj))
-            {
-                listenerMap[cls].Remove(obj);
-            }
+            listenerMap.Remove(func);
         }
     }
 

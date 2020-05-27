@@ -108,6 +108,11 @@ public static class LuaBinder
 		UnityEngine_RandomWrap.Register(L);
 		UnityEngine_MaterialPropertyBlockWrap.Register(L);
 		UnityEngine_AudioBehaviourWrap.Register(L);
+		L.BeginModule("ResourceManagement");
+		L.BeginModule("AsyncOperations");
+		UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_objectWrap.Register(L);
+		L.EndModule();
+		L.EndModule();
 		L.BeginModule("Events");
 		L.RegFunction("UnityAction", UnityEngine_Events_UnityAction);
 		L.EndModule();
@@ -152,6 +157,8 @@ public static class LuaBinder
 		L.RegFunction("Action_string", System_Action_string);
 		L.RegFunction("Func_bool", System_Func_bool);
 		L.RegFunction("Action_UnityEngine_AsyncOperation", System_Action_UnityEngine_AsyncOperation);
+		L.RegFunction("Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object", System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
+		L.RegFunction("Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle", System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
 		L.EndModule();
 		L.EndModule();
 		L.BeginPreLoad();
@@ -1435,6 +1442,60 @@ public static class LuaBinder
 			{
 				LuaTable self = ToLua.CheckLuaTable(L, 2);
 				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.AsyncOperation>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Create(func, self);
 				ToLua.Push(L, arg1);
 			}
 			return 1;

@@ -64,6 +64,8 @@ public class DelegateFactory
 		dict.Add(typeof(UnityEngine.AudioClip.PCMReaderCallback), factory.UnityEngine_AudioClip_PCMReaderCallback);
 		dict.Add(typeof(UnityEngine.AudioClip.PCMSetPositionCallback), factory.UnityEngine_AudioClip_PCMSetPositionCallback);
 		dict.Add(typeof(System.Action<UnityEngine.AsyncOperation>), factory.System_Action_UnityEngine_AsyncOperation);
+		dict.Add(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>), factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
+		dict.Add(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>), factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
 
 		DelegateTraits<System.Action>.Init(factory.System_Action);
 		DelegateTraits<UnityEngine.Events.UnityAction>.Init(factory.UnityEngine_Events_UnityAction);
@@ -112,6 +114,8 @@ public class DelegateFactory
 		DelegateTraits<UnityEngine.AudioClip.PCMReaderCallback>.Init(factory.UnityEngine_AudioClip_PCMReaderCallback);
 		DelegateTraits<UnityEngine.AudioClip.PCMSetPositionCallback>.Init(factory.UnityEngine_AudioClip_PCMSetPositionCallback);
 		DelegateTraits<System.Action<UnityEngine.AsyncOperation>>.Init(factory.System_Action_UnityEngine_AsyncOperation);
+		DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Init(factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
+		DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Init(factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
 
 		TypeTraits<System.Action>.Init(factory.Check_System_Action);
 		TypeTraits<UnityEngine.Events.UnityAction>.Init(factory.Check_UnityEngine_Events_UnityAction);
@@ -160,6 +164,8 @@ public class DelegateFactory
 		TypeTraits<UnityEngine.AudioClip.PCMReaderCallback>.Init(factory.Check_UnityEngine_AudioClip_PCMReaderCallback);
 		TypeTraits<UnityEngine.AudioClip.PCMSetPositionCallback>.Init(factory.Check_UnityEngine_AudioClip_PCMSetPositionCallback);
 		TypeTraits<System.Action<UnityEngine.AsyncOperation>>.Init(factory.Check_System_Action_UnityEngine_AsyncOperation);
+		TypeTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Init(factory.Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
+		TypeTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Init(factory.Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
 
 		StackTraits<System.Action>.Push = factory.Push_System_Action;
 		StackTraits<UnityEngine.Events.UnityAction>.Push = factory.Push_UnityEngine_Events_UnityAction;
@@ -208,6 +214,8 @@ public class DelegateFactory
 		StackTraits<UnityEngine.AudioClip.PCMReaderCallback>.Push = factory.Push_UnityEngine_AudioClip_PCMReaderCallback;
 		StackTraits<UnityEngine.AudioClip.PCMSetPositionCallback>.Push = factory.Push_UnityEngine_AudioClip_PCMSetPositionCallback;
 		StackTraits<System.Action<UnityEngine.AsyncOperation>>.Push = factory.Push_System_Action_UnityEngine_AsyncOperation;
+		StackTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Push = factory.Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object;
+		StackTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Push = factory.Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle;
 	}
     
     public static Delegate CreateDelegate(Type t, LuaFunction func = null)
@@ -3036,6 +3044,120 @@ public class DelegateFactory
 	}
 
 	void Push_System_Action_UnityEngine_AsyncOperation(IntPtr L, System.Action<UnityEngine.AsyncOperation> o)
+	{
+		ToLua.Push(L, o);
+	}
+
+	class System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event : LuaDelegate
+	{
+		public System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event(LuaFunction func) : base(func) { }
+		public System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event(LuaFunction func, LuaTable self) : base(func, self) { }
+
+		public void Call(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> param0)
+		{
+			func.BeginPCall();
+			func.PushValue(param0);
+			func.PCall();
+			func.EndPCall();
+		}
+
+		public void CallWithSelf(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> param0)
+		{
+			func.BeginPCall();
+			func.Push(self);
+			func.PushValue(param0);
+			func.PCall();
+			func.EndPCall();
+		}
+	}
+
+	public System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>> System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object(LuaFunction func, LuaTable self, bool flag)
+	{
+		if (func == null)
+		{
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>> fn = delegate(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> param0) { };
+			return fn;
+		}
+
+		if(!flag)
+		{
+			System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event target = new System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event(func);
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>> d = target.Call;
+			target.method = d.Method;
+			return d;
+		}
+		else
+		{
+			System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event target = new System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object_Event(func, self);
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>> d = target.CallWithSelf;
+			target.method = d.Method;
+			return d;
+		}
+	}
+
+	bool Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object(IntPtr L, int pos)
+	{
+		return TypeChecker.CheckDelegateType(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>), L, pos);
+	}
+
+	void Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object(IntPtr L, System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>> o)
+	{
+		ToLua.Push(L, o);
+	}
+
+	class System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event : LuaDelegate
+	{
+		public System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event(LuaFunction func) : base(func) { }
+		public System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event(LuaFunction func, LuaTable self) : base(func, self) { }
+
+		public void Call(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle param0)
+		{
+			func.BeginPCall();
+			func.PushValue(param0);
+			func.PCall();
+			func.EndPCall();
+		}
+
+		public void CallWithSelf(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle param0)
+		{
+			func.BeginPCall();
+			func.Push(self);
+			func.PushValue(param0);
+			func.PCall();
+			func.EndPCall();
+		}
+	}
+
+	public System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle> System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle(LuaFunction func, LuaTable self, bool flag)
+	{
+		if (func == null)
+		{
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle> fn = delegate(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle param0) { };
+			return fn;
+		}
+
+		if(!flag)
+		{
+			System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event target = new System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event(func);
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle> d = target.Call;
+			target.method = d.Method;
+			return d;
+		}
+		else
+		{
+			System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event target = new System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_Event(func, self);
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle> d = target.CallWithSelf;
+			target.method = d.Method;
+			return d;
+		}
+	}
+
+	bool Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle(IntPtr L, int pos)
+	{
+		return TypeChecker.CheckDelegateType(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>), L, pos);
+	}
+
+	void Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle(IntPtr L, System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle> o)
 	{
 		ToLua.Push(L, o);
 	}

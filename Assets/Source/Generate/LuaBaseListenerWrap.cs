@@ -20,12 +20,11 @@ public class LuaBaseListenerWrap
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 4);
+			ToLua.CheckArgsCount(L, 3);
 			LuaBaseListener obj = (LuaBaseListener)ToLua.CheckObject<LuaBaseListener>(L, 1);
-			LuaTable arg0 = ToLua.CheckLuaTable(L, 2);
+			LuaFunction arg0 = ToLua.CheckLuaFunction(L, 2);
 			LuaTable arg1 = ToLua.CheckLuaTable(L, 3);
-			string arg2 = ToLua.CheckString(L, 4);
-			obj.AddListener(arg0, arg1, arg2);
+			obj.AddListener(arg0, arg1);
 			return 0;
 		}
 		catch (Exception e)
@@ -39,11 +38,10 @@ public class LuaBaseListenerWrap
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 3);
+			ToLua.CheckArgsCount(L, 2);
 			LuaBaseListener obj = (LuaBaseListener)ToLua.CheckObject<LuaBaseListener>(L, 1);
-			LuaTable arg0 = ToLua.CheckLuaTable(L, 2);
-			LuaTable arg1 = ToLua.CheckLuaTable(L, 3);
-			obj.RemoveListener(arg0, arg1);
+			LuaFunction arg0 = ToLua.CheckLuaFunction(L, 2);
+			obj.RemoveListener(arg0);
 			return 0;
 		}
 		catch (Exception e)

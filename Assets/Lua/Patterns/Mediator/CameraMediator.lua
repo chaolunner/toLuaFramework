@@ -23,6 +23,10 @@ function CameraMediator:OnRegister()
     self.cameraProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.CameraProxy")
 end
 
+function CameraMediator:OnRemove()
+    self:super("OnRemove")
+end
+
 function CameraMediator:CameraMove(player)
     --DoTween控制摄像机移动效果
     self.cameraProxy.camera.transform:DOMove(player.transform.position + self.cameraProxy.cameraRelativePosition, 1)

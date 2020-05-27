@@ -159,6 +159,7 @@ public static class CustomSettings
         // 添加自 toLuaFramework
         _GT(typeof(LuaFacade)),
         _GT(typeof(LuaAddressables)),
+        _GT(typeof(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)),
         _GT(typeof(UnityEngine.Random)),
         _GT(typeof(PureMVC.Patterns.Observer.Notification)),
         _GT(typeof(LuaMediator)),

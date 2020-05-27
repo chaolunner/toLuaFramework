@@ -7,6 +7,9 @@ public class LuaFacadeWrap
 	public static void Register(LuaState L)
 	{
 		L.BeginStaticLibs("LuaFacade");
+		L.RegFunction("UpdateLocalScripts", UpdateLocalScripts);
+		L.RegFunction("UpdateLocalProtos", UpdateLocalProtos);
+		L.RegFunction("Initialize", Initialize);
 		L.RegFunction("Require", Require);
 		L.RegFunction("GetTable", GetTable);
 		L.RegFunction("New", New);
@@ -22,6 +25,53 @@ public class LuaFacadeWrap
 		L.RegFunction("RetrieveProxy", RetrieveProxy);
 		L.RegFunction("RemoveProxy", RemoveProxy);
 		L.EndStaticLibs();
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UpdateLocalScripts(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 0);
+			System.Collections.IEnumerator o = LuaFacade.UpdateLocalScripts();
+			ToLua.Push(L, o);
+			return 1;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UpdateLocalProtos(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 0);
+			System.Collections.IEnumerator o = LuaFacade.UpdateLocalProtos();
+			ToLua.Push(L, o);
+			return 1;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int Initialize(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 0);
+			LuaFacade.Initialize();
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
