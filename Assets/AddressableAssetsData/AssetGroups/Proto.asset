@@ -15,19 +15,19 @@ MonoBehaviour:
   m_GroupName: Proto
   m_Data:
     m_SerializedData: []
-  m_GUID: 386817968852d8f46a0e53dd257af4f9
+  m_GUID: d51337cc7c66f364fa9eb70641c0162b
   m_SerializeEntries:
   - m_GUID: 84c74374546a9374eba8432d8986d9eb
-    m_Address: Assets/Proto
+    m_Address: Proto
     m_ReadOnly: 0
     m_SerializedLabels:
     - proto
     m_mainAssetType: 
-    m_MainAsset: {fileID: 102900000, guid: 84c74374546a9374eba8432d8986d9eb, type: 3}
-    m_TargetAsset: {fileID: 102900000, guid: 84c74374546a9374eba8432d8986d9eb, type: 3}
+    m_MainAsset: {fileID: 0}
+    m_TargetAsset: {fileID: 0}
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 943cb6d64b41a33479c44ebeab5384bf, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: b7f9ee1f34ad9724186d1c7593d12a12, type: 2}
-    - {fileID: 11400000, guid: f5dbe8ec11d34c749a803765de9d10c9, type: 2}
+    - {fileID: 11400000, guid: fe16b56585cffdc418b3d3d4f4ffd1d5, type: 2}
+    - {fileID: 11400000, guid: 02f37d1dd9d25cc4b84540f3d11b1b82, type: 2}

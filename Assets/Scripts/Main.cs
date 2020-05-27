@@ -23,5 +23,6 @@ public static class Main
     private static IEnumerator OnAfterDownload()
     {
         yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalScripts());
+        yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalProtos());
     }
 }

@@ -61,6 +61,7 @@ function load_pb(name)
         pb.loadfile(path)
     else
         pathMap[1] = UnityEngine.Application.dataPath
+        pathMap[4] = ".pb.bytes"
         path = table.concat(pathMap)
         if (file_exists(path)) then
             pb.loadfile(path)

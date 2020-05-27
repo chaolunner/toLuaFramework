@@ -38,6 +38,11 @@ Build版本toLua报错？
 
 - 怎么进行增量更新？
   - **Tools->Build->Lua Only** （更新Lua脚本）
+
+    这里需要注意，如果你也使用了 **protobuf** 那么你需要再运行 **Tools->Build->Proto Only** （更新Proto文件）
+
+    或者你也可以直接使用 **Tools->Build->Lua + Proto** (更新Lua脚本和Proto文件)
+
   - 接着按 Addressables 正常的增量更新流程走就可以了
     - **Tools->Check for Content Update Restrications**
     - **Build->Update a Previous Build**
@@ -185,6 +190,9 @@ proto 生成 .pb 文件并加载
 - 在插件的目录下有一个 example 文件夹，我们把 **.vscode** 文件夹和 **build.bat** 文件拷贝到自己的工程的目录下（也可以直接复制 toLuaFramework/protobuf 下，配置好的文件）
 - 如果你不是直接复制的 toLuaFramework/protobuf 文件夹，那么你还需要到谷歌的 [protobuf](https://github.com/protocolbuffers/protobuf/releases) 下载 **win64** 版本
 - 需要修改 **.vscode/settings.json** 文件和 **build.bat** 文件（具体可以参考 toLuaFramework/protobuf 下的相应文件）
-- 在 vscode 终端中运行 build.bat，并在相应文件夹下生成 .pb 文件就算成功（toLuaFramework项目的生成路径在 toLuaFramework/Assets/Proto 文件夹下）
+- 在 vscode 终端中运行 build.bat，并在相应文件夹下生成 .pb 文件就算成功（toLuaFramework 项目的生成路径在 toLuaFramework/Assets/Proto 文件夹下）
+
+  toLuaFramework 也支持运行 **Tools/Addressables/Proto Only** 来生成 .pb 文件（具有可以参考 **AddressablesEditor.cs**）
+
 - 加载可以参考 **Assets/Lua/test.lua** 脚本（注,常用加载方式：**assert(pb.loadfile "Assets/Proto/test.pb")**）
 

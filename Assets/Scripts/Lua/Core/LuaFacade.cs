@@ -45,9 +45,29 @@ public class LuaFacade
                 if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
                 File.WriteAllText(path, loadHandle.Result.text);
             }
-            else
+        }
+    }
+
+    public static IEnumerator UpdateLocalProtos()
+    {
+        if (!Directory.Exists(ProtoConst.protoResDir))
+        {
+            Directory.CreateDirectory(ProtoConst.protoResDir);
+        }
+
+        var resHandle = Addressables.LoadResourceLocationsAsync(ProtoConst.label, typeof(TextAsset));
+        yield return resHandle;
+        for (int i = 0; i < resHandle.Result.Count; i++)
+        {
+            string key = resHandle.Result[i].PrimaryKey;
+            var loadHandle = Addressables.LoadAssetAsync<TextAsset>(key);
+            yield return loadHandle;
+            if (key.StartsWith(ProtoConst.address))
             {
-                File.WriteAllText(string.Format("{0}/{1}", LuaConst.luaResDir, loadHandle.Result.name), loadHandle.Result.text);
+                string path = string.Format("{0}/{1}", ProtoConst.protoResDir, key.Substring(5, key.Length - 11));
+                string dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
+                File.WriteAllBytes(path, loadHandle.Result.bytes);
             }
         }
     }

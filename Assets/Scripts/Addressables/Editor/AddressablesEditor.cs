@@ -25,6 +25,11 @@ public class AddressablesEditor
             Directory.Delete(toLuaDir, true);
         }
 
+        if (Directory.Exists(ProtoConst.protoDir))
+        {
+            Directory.Delete(ProtoConst.protoDir, true);
+        }
+
         foreach (var dataBuilder in AddressableAssetSettingsDefaultObject.Settings.DataBuilders)
         {
             AddressableAssetSettings.CleanPlayerContent(dataBuilder as IDataBuilder);
@@ -41,6 +46,11 @@ public class AddressablesEditor
             Directory.Delete(addressablesDir, true);
         }
 
+        if (Directory.Exists(ProtoConst.protoResDir))
+        {
+            Directory.Delete(ProtoConst.protoResDir, true);
+        }
+
         if (Directory.Exists(LuaConst.luaResDir))
         {
             Directory.Delete(LuaConst.luaResDir, true);
@@ -52,8 +62,15 @@ public class AddressablesEditor
     [MenuItem("Tools/Addressables/Build/All")]
     public static void BuildAll()
     {
-        BuildLua();
+        BuildLuaAndProto();
         AddressableAssetSettings.BuildPlayerContent();
+    }
+
+    [MenuItem("Tools/Addressables/Build/Lua + Proto")]
+    public static void BuildLuaAndProto()
+    {
+        BuildLua();
+        BuildProto();
     }
 
     [MenuItem("Tools/Addressables/Build/Lua Only")]
@@ -71,21 +88,27 @@ public class AddressablesEditor
 
         AssetDatabase.Refresh();
 
-        var toLuaGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup("ToLua");
-        if (toLuaGroup == null)
-        {
-            toLuaGroup = AddressableAssetSettingsDefaultObject.Settings.CreateGroup("ToLua", false, false, false, null, typeof(BundledAssetGroupSchema));
-            toLuaGroup.AddSchema<ContentUpdateGroupSchema>().StaticContent = true;
-            var bundledAssetGroupSchema = toLuaGroup.GetSchema<BundledAssetGroupSchema>();
-            bundledAssetGroupSchema.BuildPath.SetVariableByName(toLuaGroup.Settings, AddressableAssetSettings.kLocalBuildPath);
-            bundledAssetGroupSchema.LoadPath.SetVariableByName(toLuaGroup.Settings, AddressableAssetSettings.kLocalLoadPath);
-            AssetDatabase.Refresh();
-        }
+        var toLuaGroup = FindOrCreateGroup("ToLua");
 
         var guid = AssetDatabase.AssetPathToGUID("Assets/Source/Lua");
         var toLuaEntry = AddressableAssetSettingsDefaultObject.Settings.CreateOrMoveEntry(guid, toLuaGroup);
         toLuaEntry.SetLabel("lua", true);
         toLuaEntry.address = "ToLua";
+    }
+
+    static AddressableAssetGroup FindOrCreateGroup(string groupName)
+    {
+        var group = AddressableAssetSettingsDefaultObject.Settings.FindGroup(groupName);
+        if (group == null)
+        {
+            group = AddressableAssetSettingsDefaultObject.Settings.CreateGroup(groupName, false, false, false, null, typeof(BundledAssetGroupSchema));
+            group.AddSchema<ContentUpdateGroupSchema>().StaticContent = true;
+            var bundledAssetGroupSchema = group.GetSchema<BundledAssetGroupSchema>();
+            bundledAssetGroupSchema.BuildPath.SetVariableByName(group.Settings, AddressableAssetSettings.kLocalBuildPath);
+            bundledAssetGroupSchema.LoadPath.SetVariableByName(group.Settings, AddressableAssetSettings.kLocalLoadPath);
+            AssetDatabase.Refresh();
+        }
+        return group;
     }
 
     static void CopyLuaBytesFiles(string sourceDir, string destDir, bool appendext = true, string searchPattern = "*.lua", SearchOption option = SearchOption.AllDirectories)
@@ -112,5 +135,23 @@ public class AddressablesEditor
             Directory.CreateDirectory(dir);
             File.Copy(files[i], dest, true);
         }
+    }
+
+    [MenuItem("Tools/Addressables/Build/Proto Only")]
+    public static void BuildProto()
+    {
+        ProcessUtil.RunBat(ProtoConst.workingDir + "build.bat", ".bytes", ProtoConst.workingDir);
+
+        while (!Directory.Exists(ProtoConst.protoDir))
+        {
+            AssetDatabase.Refresh();
+        }
+
+        var protoGroup = FindOrCreateGroup("Proto");
+
+        var guid = AssetDatabase.AssetPathToGUID("Assets/Proto");
+        var protoEntry = AddressableAssetSettingsDefaultObject.Settings.CreateOrMoveEntry(guid, protoGroup);
+        protoEntry.SetLabel(ProtoConst.label, true);
+        protoEntry.address = ProtoConst.address;
     }
 }
