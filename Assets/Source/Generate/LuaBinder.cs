@@ -113,6 +113,8 @@ public static class LuaBinder
 		UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_objectWrap.Register(L);
 		L.EndModule();
 		L.EndModule();
+		L.BeginModule("ParticleSystem");
+		L.EndModule();
 		L.BeginModule("Events");
 		L.RegFunction("UnityAction", UnityEngine_Events_UnityAction);
 		L.EndModule();
@@ -179,6 +181,8 @@ public static class LuaBinder
 		L.AddPreLoad("LuaCollisionEnterListener", LuaOpen_LuaCollisionEnterListener, typeof(LuaCollisionEnterListener));
 		L.AddPreLoad("LuaCollisionStayListener", LuaOpen_LuaCollisionStayListener, typeof(LuaCollisionStayListener));
 		L.AddPreLoad("LuaCollisionExitListener", LuaOpen_LuaCollisionExitListener, typeof(LuaCollisionExitListener));
+		L.AddPreLoad("UnityEngine.ParticleSystem.MainModule", LuaOpen_UnityEngine_ParticleSystem_MainModule, typeof(UnityEngine.ParticleSystem.MainModule));
+		L.AddPreLoad("UnityEngine.ParticleSystem.MinMaxGradient", LuaOpen_UnityEngine_ParticleSystem_MinMaxGradient, typeof(UnityEngine.ParticleSystem.MinMaxGradient));
 		L.EndPreLoad();
 		Debugger.Log("Register lua type cost time: {0}", Time.realtimeSinceStartup - t);
 	}
@@ -1803,6 +1807,42 @@ public static class LuaBinder
 			state.BeginPreModule("");
 			LuaCollisionExitListenerWrap.Register(state);
 			int reference = state.GetMetaReference(typeof(LuaCollisionExitListener));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_ParticleSystem_MainModule(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine.ParticleSystem");
+			UnityEngine_ParticleSystem_MainModuleWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.ParticleSystem.MainModule));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_ParticleSystem_MinMaxGradient(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine.ParticleSystem");
+			UnityEngine_ParticleSystem_MinMaxGradientWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.ParticleSystem.MinMaxGradient));
 			state.EndPreModule(L, reference);
 			return 1;
 		}

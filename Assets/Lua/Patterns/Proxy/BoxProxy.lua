@@ -3,6 +3,7 @@ BoxProxy = class(Proxy)
 function BoxProxy:ctor()
     self.pool = Pool.new()
     self.currentBox = nil
+    self.boxDataMap = {}
     self.OnGenerateBox = {}
 end
 

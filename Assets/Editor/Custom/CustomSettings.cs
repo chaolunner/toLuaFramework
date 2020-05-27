@@ -171,6 +171,8 @@ public static class CustomSettings
         _GT(typeof(LuaCollisionEnterListener)),
         _GT(typeof(LuaCollisionStayListener)),
         _GT(typeof(LuaCollisionExitListener)),
+        _GT(typeof(ParticleSystem.MainModule)),
+        _GT(typeof(ParticleSystem.MinMaxGradient)),
     };
 
     public static List<Type> dynamicList = new List<Type>()
@@ -202,6 +204,8 @@ public static class CustomSettings
         typeof(LuaCollisionEnterListener),
         typeof(LuaCollisionStayListener),
         typeof(LuaCollisionExitListener),
+        typeof(ParticleSystem.MainModule),
+        typeof(ParticleSystem.MinMaxGradient),
     };
 
     //重载函数，相同参数个数，相同位置out参数匹配出问题时, 需要强制匹配解决

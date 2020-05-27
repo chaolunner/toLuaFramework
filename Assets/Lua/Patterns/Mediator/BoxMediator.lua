@@ -1,4 +1,6 @@
 BoxMediator = class(Mediator)
+
+local KeyCode = UnityEngine.KeyCode
 local minDistance = 1.5
 local maxDistance = 3
 
@@ -20,6 +22,7 @@ function BoxMediator:HandleNotification(notification)
             else
                 self:UpdateBox()
             end
+            LuaFacade.SendNotification("ColorChanged", self.boxProxy.boxDataMap[self.boxProxy.currentBox].color)
         else
             LuaFacade.SendNotification("GameOver")
         end
@@ -43,6 +46,29 @@ function BoxMediator:GenerateBox()
     table.insert(self.boxProxy.pool.OnClear, Action.new(self, BoxMediator.ClearBox))
     self.boxProxy.pool:Clear()
     self:UpdateBox()
+    self.OnUpdate = UpdateBeat:CreateListener(BoxMediator.Update, self)
+    UpdateBeat:AddListener(self.OnUpdate)
+end
+
+function BoxMediator:Update()
+    if Input.GetKeyDown(KeyCode.Space) then
+        self.startTime = Time.time
+    end
+    if Input.GetKeyUp(KeyCode.Space) then
+        self.boxProxy.currentBox.transform:DOLocalMoveY(0.25, 0.2)
+        self.boxProxy.currentBox.transform:DOScale(self.boxProxy.boxDataMap[self.boxProxy.currentBox].scale, 0.2)
+    end
+    if Input.GetKey(KeyCode.Space) then
+        if
+            self.boxProxy.currentBox.transform.localScale.y < 0.51 and
+                self.boxProxy.currentBox.transform.localScale.y > 0.3
+         then
+            self.boxProxy.currentBox.transform.localScale =
+                self.boxProxy.currentBox.transform.localScale + Vector3(0, -1, 0) * 0.15 * Time.deltaTime
+            self.boxProxy.currentBox.transform.localPosition =
+                self.boxProxy.currentBox.transform.localPosition + Vector3(0, -1, 0) * 0.15 * Time.deltaTime
+        end
+    end
 end
 
 function BoxMediator:ClearBox(boxs)
@@ -56,7 +82,7 @@ function BoxMediator:UpdateBox()
     local randomScale = Random.Range(0.5, 1)
     local box = self.boxProxy.pool:Pop()
     if self.boxProxy.currentBox == nil then
-        box.transform.position = Vector3(0, 0, 0)
+        box.transform.position = Vector3(0, 0.25, 0)
     else
         box.transform.position =
             self.boxProxy.currentBox.transform.position + Vector3(Random.Range(minDistance, maxDistance), 0, 0)
@@ -65,7 +91,12 @@ function BoxMediator:UpdateBox()
     local renderer = box:GetComponent("Renderer")
     local propertyBlock = MaterialPropertyBlock()
     renderer:GetPropertyBlock(propertyBlock)
-    propertyBlock:SetColor("_BaseColor", Color(Random.Range(0.0, 1.0), Random.Range(0.0, 1.0), Random.Range(0.0, 1.0)))
+    if self.boxProxy.boxDataMap[box] == nil then
+        self.boxProxy.boxDataMap[box] = {}
+    end
+    self.boxProxy.boxDataMap[box].scale = box.transform.localScale
+    self.boxProxy.boxDataMap[box].color = Color(Random.Range(0.0, 1.0), Random.Range(0.0, 1.0), Random.Range(0.0, 1.0))
+    propertyBlock:SetColor("_BaseColor", self.boxProxy.boxDataMap[box].color)
     renderer:SetPropertyBlock(propertyBlock)
     box:SetActive(true)
 end

@@ -1,15 +1,20 @@
 PlayerMediator = class(Mediator)
 
 require("LuaCollisionEnterListener")
+local MinMaxGradient = require("UnityEngine.ParticleSystem.MinMaxGradient")
 local KeyCode = UnityEngine.KeyCode
 
 function PlayerMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {}
+    return {"ColorChanged"}
 end
 
 function PlayerMediator:HandleNotification(notification)
     self:super("HandleNotification")
+    if notification.Name == "ColorChanged" then
+        local mainModule = self.playerProxy.particleSystem.main
+        mainModule.startColor = MinMaxGradient(Color.white, notification.Body)
+    end
 end
 
 function PlayerMediator:OnRegister()
@@ -24,7 +29,7 @@ function PlayerMediator:OnRemove()
 end
 
 function PlayerMediator:Spawn()
-    self.playerProxy.player.transform.position = Vector3(0, 0.25, 0)
+    self.playerProxy.player.transform.position = Vector3(0, 0.5, 0)
     GetOrCreateComponent(self.playerProxy.player, typeof(LuaCollisionEnterListener)):AddListener(
         self.OnCollisionEnter,
         self
@@ -39,12 +44,14 @@ function PlayerMediator:Update()
         self.startTime = Time.time
     end
     if Input.GetKeyUp(KeyCode.Space) then
+        self.playerProxy.particleSystem:Stop()
         --DoTween恢复人物
         self.playerProxy.body.transform:DOScale(0.1, 0.5)
         self.playerProxy.head.transform:DOLocalMoveY(0.27, 0.5)
         self:StartJump(Time.time - self.startTime)
     end
     if Input.GetKey(KeyCode.Space) then
+        self.playerProxy.particleSystem:Play()
         --人物压缩效果
         if self.playerProxy.body.localScale.y < 0.11 and self.playerProxy.body.localScale.y > 0.05 then
             self.playerProxy.body.localScale =

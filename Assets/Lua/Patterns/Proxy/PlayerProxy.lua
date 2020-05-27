@@ -14,14 +14,19 @@ function PlayerProxy:OnRemove()
 end
 
 function PlayerProxy:SpawnAsync()
-    local handle = LuaAddressables.LoadAssetAsync("Jump_Jump/Player.prefab")
-    while not handle.IsDone do
+    local playerHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Player.prefab")
+    local effectHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/ChargeEffect.prefab")
+    while not playerHandle.IsDone or not effectHandle.IsDone do
         coroutine.step()
     end
-    self.player = GameObject.Instantiate(handle.Result)
+    self.player = GameObject.Instantiate(playerHandle.Result)
     self.rigidbody = self.player:GetComponent("Rigidbody")
     self.head = self.player.transform:Find("Head")
     self.body = self.player.transform:Find("Body")
+    self.effect = GameObject.Instantiate(effectHandle.Result)
+    self.effect.transform:SetParent(self.player.transform)
+    self.effect.transform.localPosition = Vector3.zero
+    self.particleSystem = self.effect:GetComponent("ParticleSystem")
 
     if self.OnSpawn then
         for k, v in ipairs(self.OnSpawn) do
