@@ -1,4 +1,5 @@
 ﻿using UnityEngine.AddressableAssets;
+using System.Collections.Generic;
 using PureMVC.Patterns.Observer;
 using System.Collections;
 using PureMVC.Interfaces;
@@ -8,6 +9,8 @@ using System.IO;
 
 public class LuaFacade
 {
+    private static Dictionary<string, LuaCommand> commandMap = new Dictionary<string, LuaCommand>();
+
     private static IFacade facade
     {
         get
@@ -107,9 +110,9 @@ public class LuaFacade
         return (facade.RetrieveMediator(mediatorName) as LuaMediator).Mediator;
     }
 
-    public static void HasMediator(string mediatorName)
+    public static bool HasMediator(string mediatorName)
     {
-        facade.HasMediator(mediatorName);
+        return facade.HasMediator(mediatorName);
     }
 
     public static void RemoveMediator(string mediatorName)
@@ -124,17 +127,27 @@ public class LuaFacade
 
     public static void RegisterCommand(string commandName, string notificationName)
     {
-        facade.RegisterCommand(notificationName, () => { return new LuaCommand(commandName); });
+        if (!HasCommand(notificationName))
+        {
+            var cmd = new LuaCommand(commandName);
+            commandMap.Add(notificationName, cmd);
+            facade.RegisterCommand(notificationName, () => { return cmd; });
+        }
     }
 
-    public static void HasCommand(string notificationName)
+    public static bool HasCommand(string notificationName)
     {
-        facade.HasCommand(notificationName);
+        return facade.HasCommand(notificationName);
     }
 
     public static void RemoveCommand(string notificationName)
     {
-        facade.RemoveCommand(notificationName);
+        if (HasCommand(notificationName))
+        {
+            facade.RemoveCommand(notificationName);
+            commandMap[notificationName].OnRemove();
+            commandMap.Remove(notificationName);
+        }
     }
 
     public static void RegisterProxy(string proxyName, object data = null)
@@ -145,6 +158,11 @@ public class LuaFacade
     public static LuaTable RetrieveProxy(string proxyName)
     {
         return (facade.RetrieveProxy(proxyName) as LuaProxy).Proxy;
+    }
+
+    public static bool HasProxy(string proxyName)
+    {
+        return facade.HasProxy(proxyName);
     }
 
     public static void RemoveProxy(string proxyName)

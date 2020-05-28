@@ -25,4 +25,10 @@ public class LuaCommand : SimpleCommand
     {
         commandClass.Call("Execute", commandObject, notification);
     }
+
+    public virtual void OnRemove()
+    {
+        commandClass.Dispose();
+        commandObject.Dispose();
+    }
 }

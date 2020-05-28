@@ -23,6 +23,7 @@ public class LuaFacadeWrap
 		L.RegFunction("RemoveCommand", RemoveCommand);
 		L.RegFunction("RegisterProxy", RegisterProxy);
 		L.RegFunction("RetrieveProxy", RetrieveProxy);
+		L.RegFunction("HasProxy", HasProxy);
 		L.RegFunction("RemoveProxy", RemoveProxy);
 		L.EndStaticLibs();
 	}
@@ -179,8 +180,9 @@ public class LuaFacadeWrap
 		{
 			ToLua.CheckArgsCount(L, 1);
 			string arg0 = ToLua.CheckString(L, 1);
-			LuaFacade.HasMediator(arg0);
-			return 0;
+			bool o = LuaFacade.HasMediator(arg0);
+			LuaDLL.lua_pushboolean(L, o);
+			return 1;
 		}
 		catch (Exception e)
 		{
@@ -267,8 +269,9 @@ public class LuaFacadeWrap
 		{
 			ToLua.CheckArgsCount(L, 1);
 			string arg0 = ToLua.CheckString(L, 1);
-			LuaFacade.HasCommand(arg0);
-			return 0;
+			bool o = LuaFacade.HasCommand(arg0);
+			LuaDLL.lua_pushboolean(L, o);
+			return 1;
 		}
 		catch (Exception e)
 		{
@@ -332,6 +335,23 @@ public class LuaFacadeWrap
 			string arg0 = ToLua.CheckString(L, 1);
 			LuaInterface.LuaTable o = LuaFacade.RetrieveProxy(arg0);
 			ToLua.Push(L, o);
+			return 1;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int HasProxy(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 1);
+			string arg0 = ToLua.CheckString(L, 1);
+			bool o = LuaFacade.HasProxy(arg0);
+			LuaDLL.lua_pushboolean(L, o);
 			return 1;
 		}
 		catch (Exception e)

@@ -7,13 +7,11 @@ end
 
 function CameraMediator:HandleNotification(notification)
     self:super("HandleNotification")
-    if notification.Name == "PlayerSpawn" then
-        self.cameraProxy.cameraRelativePosition =
-            self.cameraProxy.camera.transform.position - notification.Body.player.transform.position
-    elseif notification.Name == "PlayerJumped" then
-        if notification.Body.hit:CompareTag("Box") then
-            self:CameraMove(notification.Body.player)
-        end
+    if
+        notification.Name == "PlayerSpawn" or
+            (notification.Name == "PlayerJumped" and notification.Body.hit:CompareTag("Box"))
+     then
+        self:CameraMove(notification.Body.player)
     end
 end
 
@@ -25,6 +23,7 @@ end
 
 function CameraMediator:OnRemove()
     self:super("OnRemove")
+    LuaFacade.RemoveProxy("Patterns.Proxy.CameraProxy")
 end
 
 function CameraMediator:CameraMove(player)

@@ -8,6 +8,7 @@ public class LuaCommandWrap
 	{
 		L.BeginClass(typeof(LuaCommand), typeof(PureMVC.Patterns.Command.SimpleCommand));
 		L.RegFunction("Execute", Execute);
+		L.RegFunction("OnRemove", OnRemove);
 		L.RegFunction("New", _CreateLuaCommand);
 		L.RegFunction("__tostring", ToLua.op_ToString);
 		L.RegVar("Command", get_Command, null);
@@ -49,6 +50,22 @@ public class LuaCommandWrap
 			LuaCommand obj = (LuaCommand)ToLua.CheckObject<LuaCommand>(L, 1);
 			PureMVC.Interfaces.INotification arg0 = (PureMVC.Interfaces.INotification)ToLua.CheckObject<PureMVC.Interfaces.INotification>(L, 2);
 			obj.Execute(arg0);
+			return 0;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int OnRemove(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 1);
+			LuaCommand obj = (LuaCommand)ToLua.CheckObject<LuaCommand>(L, 1);
+			obj.OnRemove();
 			return 0;
 		}
 		catch (Exception e)

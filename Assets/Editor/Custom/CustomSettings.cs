@@ -34,6 +34,7 @@ public static class CustomSettings
         typeof(LuaFacade),
         typeof(LuaAddressables),
         typeof(UnityEngine.Random),
+        typeof(UnityEngine.SceneManagement.SceneManager),
     };
 
     //附加导出委托类型(在导出委托时, customTypeList 中牵扯的委托类型都会导出， 无需写在这里)
@@ -98,24 +99,24 @@ public static class CustomSettings
 #endif
       
         _GT(typeof(Behaviour)),
-        _GT(typeof(MonoBehaviour)),        
+        _GT(typeof(MonoBehaviour)),
         _GT(typeof(GameObject)),
         _GT(typeof(TrackedReference)),
         _GT(typeof(Application)),
         _GT(typeof(Physics)),
         _GT(typeof(Collider)),
-        _GT(typeof(Time)),        
+        _GT(typeof(Time)),
         _GT(typeof(Texture)),
         _GT(typeof(Texture2D)),
-        _GT(typeof(Shader)),        
+        _GT(typeof(Shader)),
         _GT(typeof(Renderer)),
         _GT(typeof(WWW)),
-        _GT(typeof(Screen)),        
+        _GT(typeof(Screen)),
         _GT(typeof(CameraClearFlags)),
-        _GT(typeof(AudioClip)),        
+        _GT(typeof(AudioClip)),
         _GT(typeof(AssetBundle)),
         _GT(typeof(ParticleSystem)),
-        _GT(typeof(AsyncOperation)).SetBaseType(typeof(System.Object)),        
+        _GT(typeof(AsyncOperation)).SetBaseType(typeof(System.Object)),
         _GT(typeof(LightType)),
         _GT(typeof(SleepTimeout)),
 #if UNITY_5_3_OR_NEWER && !UNITY_5_6_OR_NEWER
@@ -125,8 +126,8 @@ public static class CustomSettings
         _GT(typeof(Input)),
         _GT(typeof(KeyCode)),
         _GT(typeof(SkinnedMeshRenderer)),
-        _GT(typeof(Space)),      
-       
+        _GT(typeof(Space)),
+
 
         _GT(typeof(MeshRenderer)),
 #if !UNITY_5_4_OR_NEWER
@@ -137,23 +138,23 @@ public static class CustomSettings
 
         _GT(typeof(BoxCollider)),
         _GT(typeof(MeshCollider)),
-        _GT(typeof(SphereCollider)),        
+        _GT(typeof(SphereCollider)),
         _GT(typeof(CharacterController)),
         _GT(typeof(CapsuleCollider)),
-        
-        _GT(typeof(Animation)),        
-        _GT(typeof(AnimationClip)).SetBaseType(typeof(UnityEngine.Object)),        
+
+        _GT(typeof(Animation)),
+        _GT(typeof(AnimationClip)).SetBaseType(typeof(UnityEngine.Object)),
         _GT(typeof(AnimationState)),
         _GT(typeof(AnimationBlendMode)),
-        _GT(typeof(QueueMode)),  
+        _GT(typeof(QueueMode)),
         _GT(typeof(PlayMode)),
         _GT(typeof(WrapMode)),
 
         _GT(typeof(QualitySettings)),
-        _GT(typeof(RenderSettings)),                                                   
-        _GT(typeof(SkinWeights)),           
+        _GT(typeof(RenderSettings)),
+        _GT(typeof(SkinWeights)),
         _GT(typeof(RenderTexture)),
-        _GT(typeof(Resources)),     
+        _GT(typeof(Resources)),
         _GT(typeof(LuaProfiler)),
 
         // 添加自 toLuaFramework
@@ -171,8 +172,13 @@ public static class CustomSettings
         _GT(typeof(LuaCollisionEnterListener)),
         _GT(typeof(LuaCollisionStayListener)),
         _GT(typeof(LuaCollisionExitListener)),
+        _GT(typeof(LuaUIEventListener)),
+        _GT(typeof(UnityEngine.EventSystems.EventTriggerType)),
+        _GT(typeof(UnityEngine.EventSystems.BaseEventData)),
         _GT(typeof(ParticleSystem.MainModule)),
         _GT(typeof(ParticleSystem.MinMaxGradient)),
+        _GT(typeof(TMPro.TMP_Text)),
+        _GT(typeof(UnityEngine.SceneManagement.SceneManager)),
     };
 
     public static List<Type> dynamicList = new List<Type>()
@@ -204,8 +210,12 @@ public static class CustomSettings
         typeof(LuaCollisionEnterListener),
         typeof(LuaCollisionStayListener),
         typeof(LuaCollisionExitListener),
+        typeof(LuaUIEventListener),
+        typeof(UnityEngine.EventSystems.EventTriggerType),
+        typeof(UnityEngine.EventSystems.BaseEventData),
         typeof(ParticleSystem.MainModule),
         typeof(ParticleSystem.MinMaxGradient),
+        typeof(TMPro.TMP_Text),
     };
 
     //重载函数，相同参数个数，相同位置out参数匹配出问题时, 需要强制匹配解决

@@ -6,14 +6,16 @@ local KeyCode = UnityEngine.KeyCode
 
 function PlayerMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {"ColorChanged"}
+    return {"GameStart", "ColorChanged"}
 end
 
 function PlayerMediator:HandleNotification(notification)
     self:super("HandleNotification")
-    if notification.Name == "ColorChanged" then
+    if notification.Name == "GameStart" then
+        self:Spawn()
+    elseif notification.Name == "ColorChanged" then
         local mainModule = self.playerProxy.particleSystem.main
-        mainModule.startColor = MinMaxGradient(Color.white, notification.Body)
+        mainModule.startColor = MinMaxGradient(Color.white, notification.Body.color)
     end
 end
 
@@ -21,21 +23,28 @@ function PlayerMediator:OnRegister()
     self:super("OnRegister")
     LuaFacade.RegisterProxy("Patterns.Proxy.PlayerProxy")
     self.playerProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.PlayerProxy")
-    table.insert(self.playerProxy.OnSpawn, Action.new(self, PlayerMediator.Spawn))
+    table.insert(self.playerProxy.OnInitCompleted, Action.new(self, PlayerMediator.OnInitCompleted))
 end
 
 function PlayerMediator:OnRemove()
     self:super("OnRemove")
+    LuaFacade.RemoveProxy("Patterns.Proxy.PlayerProxy")
 end
 
-function PlayerMediator:Spawn()
-    self.playerProxy.player.transform.position = Vector3(0, 0.5, 0)
+function PlayerMediator:OnInitCompleted()
+    self.playerProxy.player.transform.position = Vector3(0, -5, 0)
+    self.playerProxy.rigidbody.useGravity = false
     GetOrCreateComponent(self.playerProxy.player, typeof(LuaCollisionEnterListener)):AddListener(
         self.OnCollisionEnter,
         self
     )
     self.OnUpdate = UpdateBeat:CreateListener(PlayerMediator.Update, self)
     UpdateBeat:AddListener(self.OnUpdate)
+end
+
+function PlayerMediator:Spawn()
+    self.playerProxy.player.transform.position = Vector3(0, 0.5, 0)
+    self.playerProxy.rigidbody.useGravity = true
     LuaFacade.SendNotification("PlayerSpawn", {player = self.playerProxy.player})
 end
 
@@ -68,8 +77,7 @@ function PlayerMediator:StartJump(time)
 end
 
 function PlayerMediator:OnCollisionEnter(collision)
-    local body = {player = self.playerProxy.player, hit = collision.collider.gameObject}
-    LuaFacade.SendNotification("PlayerJumped", body)
+    LuaFacade.SendNotification("PlayerJumped", {player = self.playerProxy.player, hit = collision.collider.gameObject})
 end
 
 return PlayerMediator

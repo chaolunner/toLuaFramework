@@ -1,0 +1,3 @@
+View = class()
+
+return View

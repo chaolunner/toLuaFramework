@@ -1,21 +1,21 @@
 PlayerProxy = class(Proxy)
 
 function PlayerProxy:ctor()
-    self.OnSpawn = {}
+    self.OnInitCompleted = {}
 end
 
 function PlayerProxy:OnRegister()
     self:super("OnRegister")
-    coroutine.start(self.SpawnAsync, self)
+    coroutine.start(PlayerProxy.InitAsync, self)
 end
 
 function PlayerProxy:OnRemove()
     self:super("OnRemove")
 end
 
-function PlayerProxy:SpawnAsync()
+function PlayerProxy:InitAsync()
     local playerHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Player.prefab")
-    local effectHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/ChargeEffect.prefab")
+    local effectHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Effect.prefab")
     while not playerHandle.IsDone or not effectHandle.IsDone do
         coroutine.step()
     end
@@ -28,8 +28,8 @@ function PlayerProxy:SpawnAsync()
     self.effect.transform.localPosition = Vector3.zero
     self.particleSystem = self.effect:GetComponent("ParticleSystem")
 
-    if self.OnSpawn then
-        for k, v in ipairs(self.OnSpawn) do
+    if self.OnInitCompleted then
+        for k, v in ipairs(self.OnInitCompleted) do
             v:Invoke()
         end
     end

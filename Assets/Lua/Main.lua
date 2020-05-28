@@ -8,6 +8,7 @@ function Main()
     Command = require("Patterns.Command")
     Mediator = require("Patterns.Mediator")
     Proxy = require("Patterns.Proxy")
+    View = require("Views.View")
     pb = require("pb")
 
     require("lua-protobuf.test")
@@ -18,8 +19,10 @@ function Main()
     Input = UnityEngine.Input
     Camera = UnityEngine.Camera
     MaterialPropertyBlock = UnityEngine.MaterialPropertyBlock
+    SceneManager = UnityEngine.SceneManagement.SceneManager
 
     LuaFacade.RegisterCommand("Patterns.Command.StartUpCommand", "StartUp")
+    LuaFacade.RegisterCommand("Patterns.Command.LoadSceneCommand", "LoadScene")
     LuaFacade.SendNotification("StartUp")
 
     print("logic start")
@@ -29,6 +32,7 @@ end
 function OnLevelWasLoaded(level)
     collectgarbage("collect")
     Time.timeSinceLevelLoad = 0
+    LuaFacade.SendNotification("LoadScene", {level = level})
 end
 
 function OnApplicationQuit()

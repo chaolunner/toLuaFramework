@@ -7,15 +7,44 @@ public class LuaBaseListener : MonoBehaviour
 {
     private Dictionary<LuaFunction, LuaTable> listenerMap = new Dictionary<LuaFunction, LuaTable>();
 
-    protected void Call<T>(T arg)
+    private void OnDestroy()
     {
-        var e1 = listenerMap.GetEnumerator();
-        while (e1.MoveNext())
+        RemoveAllListeners();
+    }
+
+    protected void Call()
+    {
+        var e = listenerMap.GetEnumerator();
+        while (e.MoveNext())
         {
-            var func = e1.Current.Key;
+            var func = e.Current.Key;
             if (func == null) { continue; }
-            var obj = e1.Current.Value;
-            func.Call(obj, arg);
+            var obj = e.Current.Value;
+            func.Call(obj);
+        }
+    }
+
+    protected void Call<T1>(T1 arg1)
+    {
+        var e = listenerMap.GetEnumerator();
+        while (e.MoveNext())
+        {
+            var func = e.Current.Key;
+            if (func == null) { continue; }
+            var obj = e.Current.Value;
+            func.Call(obj, arg1);
+        }
+    }
+
+    protected void Call<T1, T2>(T1 arg1, T2 arg2)
+    {
+        var e = listenerMap.GetEnumerator();
+        while (e.MoveNext())
+        {
+            var func = e.Current.Key;
+            if (func == null) { continue; }
+            var obj = e.Current.Value;
+            func.Call(obj, arg1, arg2);
         }
     }
 
@@ -35,12 +64,20 @@ public class LuaBaseListener : MonoBehaviour
     {
         if (listenerMap.ContainsKey(func))
         {
+            func.Dispose();
+            listenerMap[func].Dispose();
             listenerMap.Remove(func);
         }
     }
 
     public void RemoveAllListeners()
     {
+        var e = listenerMap.GetEnumerator();
+        while (e.MoveNext())
+        {
+            e.Current.Key.Dispose();
+            e.Current.Value.Dispose();
+        }
         listenerMap.Clear();
     }
 }

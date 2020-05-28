@@ -6,12 +6,16 @@ local maxDistance = 3
 
 function BoxMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {"PlayerJumped", "GameOver"}
+    return {"PlayerSpawn", "PlayerJumped"}
 end
 
 function BoxMediator:HandleNotification(notification)
     self:super("HandleNotification")
-    if notification.Name == "PlayerJumped" then
+    if notification.Name == "PlayerSpawn" then
+        self.boxProxy:Clear()
+        self.boxProxy.currentBox = nil
+        self:UpdateBox()
+    elseif notification.Name == "PlayerJumped" then
         if notification.Body.hit:CompareTag("Box") then
             local currentBox = self.boxProxy.currentBox
             self.boxProxy.currentBox = notification.Body.hit
@@ -22,12 +26,13 @@ function BoxMediator:HandleNotification(notification)
             else
                 self:UpdateBox()
             end
-            LuaFacade.SendNotification("ColorChanged", self.boxProxy.boxDataMap[self.boxProxy.currentBox].color)
+            LuaFacade.SendNotification(
+                "ColorChanged",
+                {color = self.boxProxy.boxDataMap[self.boxProxy.currentBox].color}
+            )
         else
             LuaFacade.SendNotification("GameOver")
         end
-    elseif notification.Name == "GameOver" then
-        self.boxProxy.pool:Clear()
     end
 end
 
@@ -35,17 +40,16 @@ function BoxMediator:OnRegister()
     self:super("OnRegister")
     LuaFacade.RegisterProxy("Patterns.Proxy.BoxProxy")
     self.boxProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.BoxProxy")
-    table.insert(self.boxProxy.OnGenerateBox, Action.new(self, BoxMediator.GenerateBox))
+    table.insert(self.boxProxy.OnInitCompleted, Action.new(self, BoxMediator.OnInitCompleted))
 end
 
 function BoxMediator:OnRemove()
     self:super("OnRemove")
+    LuaFacade.RemoveProxy("Patterns.Proxy.BoxProxy")
 end
 
-function BoxMediator:GenerateBox()
-    table.insert(self.boxProxy.pool.OnClear, Action.new(self, BoxMediator.ClearBox))
-    self.boxProxy.pool:Clear()
-    self:UpdateBox()
+function BoxMediator:OnInitCompleted()
+    self.boxProxy:Clear()
     self.OnUpdate = UpdateBeat:CreateListener(BoxMediator.Update, self)
     UpdateBeat:AddListener(self.OnUpdate)
 end
@@ -68,12 +72,6 @@ function BoxMediator:Update()
             self.boxProxy.currentBox.transform.localPosition =
                 self.boxProxy.currentBox.transform.localPosition + Vector3(0, -1, 0) * 0.15 * Time.deltaTime
         end
-    end
-end
-
-function BoxMediator:ClearBox(boxs)
-    for k, v in pairs(boxs) do
-        v:SetActive(false)
     end
 end
 

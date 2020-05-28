@@ -113,10 +113,24 @@ public static class LuaBinder
 		UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_objectWrap.Register(L);
 		L.EndModule();
 		L.EndModule();
+		L.BeginModule("EventSystems");
+		UnityEngine_EventSystems_AbstractEventDataWrap.Register(L);
+		UnityEngine_EventSystems_UIBehaviourWrap.Register(L);
+		L.EndModule();
 		L.BeginModule("ParticleSystem");
+		L.EndModule();
+		L.BeginModule("SceneManagement");
+		UnityEngine_SceneManagement_SceneManagerWrap.Register(L);
+		L.EndModule();
+		L.BeginModule("UI");
+		UnityEngine_UI_MaskableGraphicWrap.Register(L);
+		UnityEngine_UI_GraphicWrap.Register(L);
 		L.EndModule();
 		L.BeginModule("Events");
 		L.RegFunction("UnityAction", UnityEngine_Events_UnityAction);
+		L.RegFunction("UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode", UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode);
+		L.RegFunction("UnityAction_UnityEngine_SceneManagement_Scene", UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene);
+		L.RegFunction("UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene", UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene);
 		L.EndModule();
 		L.BeginModule("Camera");
 		L.RegFunction("CameraCallback", UnityEngine_Camera_CameraCallback);
@@ -147,6 +161,8 @@ public static class LuaBinder
 		PureMVC_Patterns_Proxy_ProxyWrap.Register(L);
 		L.EndModule();
 		L.EndModule();
+		L.EndModule();
+		L.BeginModule("TMPro");
 		L.EndModule();
 		L.BeginModule("System");
 		L.RegFunction("Action", System_Action);
@@ -181,8 +197,12 @@ public static class LuaBinder
 		L.AddPreLoad("LuaCollisionEnterListener", LuaOpen_LuaCollisionEnterListener, typeof(LuaCollisionEnterListener));
 		L.AddPreLoad("LuaCollisionStayListener", LuaOpen_LuaCollisionStayListener, typeof(LuaCollisionStayListener));
 		L.AddPreLoad("LuaCollisionExitListener", LuaOpen_LuaCollisionExitListener, typeof(LuaCollisionExitListener));
+		L.AddPreLoad("LuaUIEventListener", LuaOpen_LuaUIEventListener, typeof(LuaUIEventListener));
+		L.AddPreLoad("UnityEngine.EventSystems.EventTriggerType", LuaOpen_UnityEngine_EventSystems_EventTriggerType, typeof(UnityEngine.EventSystems.EventTriggerType));
+		L.AddPreLoad("UnityEngine.EventSystems.BaseEventData", LuaOpen_UnityEngine_EventSystems_BaseEventData, typeof(UnityEngine.EventSystems.BaseEventData));
 		L.AddPreLoad("UnityEngine.ParticleSystem.MainModule", LuaOpen_UnityEngine_ParticleSystem_MainModule, typeof(UnityEngine.ParticleSystem.MainModule));
 		L.AddPreLoad("UnityEngine.ParticleSystem.MinMaxGradient", LuaOpen_UnityEngine_ParticleSystem_MinMaxGradient, typeof(UnityEngine.ParticleSystem.MinMaxGradient));
+		L.AddPreLoad("TMPro.TMP_Text", LuaOpen_TMPro_TMP_Text, typeof(TMPro.TMP_Text));
 		L.EndPreLoad();
 		Debugger.Log("Register lua type cost time: {0}", Time.realtimeSinceStartup - t);
 	}
@@ -1025,6 +1045,87 @@ public static class LuaBinder
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene(IntPtr L)
+	{
+		try
+		{
+			int count = LuaDLL.lua_gettop(L);
+			LuaFunction func = ToLua.CheckLuaFunction(L, 1);
+
+			if (count == 1)
+			{
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene>>.Create(func);
+				ToLua.Push(L, arg1);
+			}
+			else
+			{
+				LuaTable self = ToLua.CheckLuaTable(L, 2);
+				Delegate arg1 = DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene>>.Create(func, self);
+				ToLua.Push(L, arg1);
+			}
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int UnityEngine_Camera_CameraCallback(IntPtr L)
 	{
 		try
@@ -1817,6 +1918,60 @@ public static class LuaBinder
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_LuaUIEventListener(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("");
+			LuaUIEventListenerWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(LuaUIEventListener));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_EventSystems_EventTriggerType(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine.EventSystems");
+			UnityEngine_EventSystems_EventTriggerTypeWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.EventSystems.EventTriggerType));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_EventSystems_BaseEventData(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine.EventSystems");
+			UnityEngine_EventSystems_BaseEventDataWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.EventSystems.BaseEventData));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int LuaOpen_UnityEngine_ParticleSystem_MainModule(IntPtr L)
 	{
 		try
@@ -1843,6 +1998,24 @@ public static class LuaBinder
 			state.BeginPreModule("UnityEngine.ParticleSystem");
 			UnityEngine_ParticleSystem_MinMaxGradientWrap.Register(state);
 			int reference = state.GetMetaReference(typeof(UnityEngine.ParticleSystem.MinMaxGradient));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_TMPro_TMP_Text(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("TMPro");
+			TMPro_TMP_TextWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(TMPro.TMP_Text));
 			state.EndPreModule(L, reference);
 			return 1;
 		}
