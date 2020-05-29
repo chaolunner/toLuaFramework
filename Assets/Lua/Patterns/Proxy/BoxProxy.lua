@@ -5,19 +5,19 @@ function BoxProxy:ctor()
     table.insert(self.pool.OnClear, Action.new(self, BoxProxy.OnClear))
     self.currentBox = nil
     self.boxDataMap = {}
-    self.OnInitCompleted = {}
+    self.isInitialized = false
 end
 
 function BoxProxy:OnRegister()
     self:super("OnRegister")
-    coroutine.start(BoxProxy.InitAsync, self)
+    coroutine.start(BoxProxy.InitializeAsync, self)
 end
 
 function BoxProxy:OnRemove()
     self:super("OnRemove")
 end
 
-function BoxProxy:InitAsync()
+function BoxProxy:InitializeAsync()
     local handle = LuaAddressables.LoadAssetAsync("Jump_Jump/Box.prefab")
     while not handle.IsDone do
         coroutine.step()
@@ -25,12 +25,7 @@ function BoxProxy:InitAsync()
     for i = 1, 10 do
         self.pool:Push(GameObject.Instantiate(handle.Result))
     end
-
-    if self.OnInitCompleted then
-        for k, v in ipairs(self.OnInitCompleted) do
-            v:Invoke()
-        end
-    end
+    self.isInitialized = true
 end
 
 function BoxProxy:Clear()

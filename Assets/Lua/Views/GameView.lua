@@ -3,11 +3,14 @@ GameView = class(View)
 local Text = require("TMPro.TMP_Text")
 
 function GameView:ctor()
-    self.OnInitCompleted = {}
-    coroutine.start(GameView.InitAsync, self)
+    self.isInitialized = false
 end
 
-function GameView:InitAsync()
+function GameView:Initialize()
+    coroutine.start(GameView.InitializeAsync, self)
+end
+
+function GameView:InitializeAsync()
     local canvasHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Canvas.prefab")
     local eventSystemHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/EventSystem.prefab")
     while not canvasHandle.IsDone or not eventSystemHandle.IsDone do
@@ -21,14 +24,8 @@ function GameView:InitAsync()
     self.exitButton = self.startMenu.transform:Find("ExitButton").gameObject
     self.restartButton = self.endMenu.transform:Find("RestartButton").gameObject
     self.scoreText = self.endMenu.transform:Find("Score/Text"):GetComponent(typeof(Text))
-
     self:OpenStartMenu()
-
-    if self.OnInitCompleted then
-        for k, v in ipairs(self.OnInitCompleted) do
-            v:Invoke()
-        end
-    end
+    self.isInitialized = true
 end
 
 function GameView:OpenStartMenu()

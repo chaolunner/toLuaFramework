@@ -23,15 +23,19 @@ function PlayerMediator:OnRegister()
     self:super("OnRegister")
     LuaFacade.RegisterProxy("Patterns.Proxy.PlayerProxy")
     self.playerProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.PlayerProxy")
-    table.insert(self.playerProxy.OnInitCompleted, Action.new(self, PlayerMediator.OnInitCompleted))
+    coroutine.start(PlayerMediator.OnInitialized, self)
 end
 
 function PlayerMediator:OnRemove()
     self:super("OnRemove")
+    UpdateBeat:RemoveListener(self.OnUpdate)
     LuaFacade.RemoveProxy("Patterns.Proxy.PlayerProxy")
 end
 
-function PlayerMediator:OnInitCompleted()
+function PlayerMediator:OnInitialized()
+    while not self.playerProxy.isInitialized do
+        coroutine.step()
+    end
     self.playerProxy.player.transform.position = Vector3(0, -5, 0)
     self.playerProxy.rigidbody.useGravity = false
     GetOrCreateComponent(self.playerProxy.player, typeof(LuaCollisionEnterListener)):AddListener(

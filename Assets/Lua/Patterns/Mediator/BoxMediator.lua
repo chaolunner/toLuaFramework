@@ -40,15 +40,19 @@ function BoxMediator:OnRegister()
     self:super("OnRegister")
     LuaFacade.RegisterProxy("Patterns.Proxy.BoxProxy")
     self.boxProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.BoxProxy")
-    table.insert(self.boxProxy.OnInitCompleted, Action.new(self, BoxMediator.OnInitCompleted))
+    coroutine.start(BoxMediator.OnInitialized, self)
 end
 
 function BoxMediator:OnRemove()
     self:super("OnRemove")
+    UpdateBeat:RemoveListener(self.OnUpdate)
     LuaFacade.RemoveProxy("Patterns.Proxy.BoxProxy")
 end
 
-function BoxMediator:OnInitCompleted()
+function BoxMediator:OnInitialized()
+    while not self.boxProxy.isInitialized do
+        coroutine.step()
+    end
     self.boxProxy:Clear()
     self.OnUpdate = UpdateBeat:CreateListener(BoxMediator.Update, self)
     UpdateBeat:AddListener(self.OnUpdate)

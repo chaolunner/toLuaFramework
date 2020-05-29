@@ -24,7 +24,8 @@ function GameMediator:OnRegister()
     self:super("OnRegister")
     self.score = 0
     self.gameView = GameView.new()
-    table.insert(self.gameView.OnInitCompleted, Action.new(self, GameMediator.OnInitCompleted))
+    self.gameView:Initialize()
+    coroutine.start(GameMediator.OnInitialized, self)
 end
 
 function GameMediator:OnRemove()
@@ -37,7 +38,10 @@ function GameMediator:bindButton(btn, evt)
     listener:AddListener(self[evt], self)
 end
 
-function GameMediator:OnInitCompleted()
+function GameMediator:OnInitialized()
+    while not self.gameView.isInitialized do
+        coroutine.step()
+    end
     self:bindButton("startButton", "OnGameStart")
     self:bindButton("exitButton", "OnGameExit")
     self:bindButton("restartButton", "OnPlayAgain")

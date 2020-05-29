@@ -36,6 +36,8 @@ function OnLevelWasLoaded(level)
 end
 
 function OnApplicationQuit()
+    LuaFacade.RemoveCommand("StartUp")
+    LuaFacade.RemoveCommand("LoadScene")
 end
 
 function class(base)
