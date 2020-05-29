@@ -11,13 +11,11 @@ function GameView:Initialize()
 end
 
 function GameView:InitializeAsync()
-    local canvasHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Canvas.prefab")
-    local eventSystemHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/EventSystem.prefab")
-    while not canvasHandle.IsDone or not eventSystemHandle.IsDone do
+    local canvasHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Prefabs/Canvas.prefab")
+    while not canvasHandle.IsDone do
         coroutine.step()
     end
     self.canvas = GameObject.Instantiate(canvasHandle.Result)
-    self.eventSystem = GameObject.Instantiate(eventSystemHandle.Result)
     self.startMenu = self.canvas.transform:Find("StartMenu").gameObject
     self.endMenu = self.canvas.transform:Find("EndMenu").gameObject
     self.startButton = self.startMenu.transform:Find("StartButton").gameObject

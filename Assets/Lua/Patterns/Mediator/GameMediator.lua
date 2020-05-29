@@ -65,3 +65,5 @@ function GameMediator:OnPlayAgain(type, evtData)
         self.gameView:OpenStartMenu()
     end
 end
+
+return GameMediator

@@ -18,7 +18,7 @@ function BoxProxy:OnRemove()
 end
 
 function BoxProxy:InitializeAsync()
-    local handle = LuaAddressables.LoadAssetAsync("Jump_Jump/Box.prefab")
+    local handle = LuaAddressables.LoadAssetAsync("Jump_Jump/Prefabs/Box.prefab")
     while not handle.IsDone do
         coroutine.step()
     end

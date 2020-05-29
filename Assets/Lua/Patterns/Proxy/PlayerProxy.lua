@@ -14,8 +14,8 @@ function PlayerProxy:OnRemove()
 end
 
 function PlayerProxy:InitializeAsync()
-    local playerHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Player.prefab")
-    local effectHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Effect.prefab")
+    local playerHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Prefabs/Player.prefab")
+    local effectHandle = LuaAddressables.LoadAssetAsync("Jump_Jump/Prefabs/Effect.prefab")
     while not playerHandle.IsDone or not effectHandle.IsDone do
         coroutine.step()
     end

@@ -104,3 +104,5 @@ function BoxMediator:UpdateBox()
     renderer:SetPropertyBlock(propertyBlock)
     box:SetActive(true)
 end
+
+return BoxMediator

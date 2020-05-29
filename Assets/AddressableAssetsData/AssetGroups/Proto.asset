@@ -15,7 +15,7 @@ MonoBehaviour:
   m_GroupName: Proto
   m_Data:
     m_SerializedData: []
-  m_GUID: d51337cc7c66f364fa9eb70641c0162b
+  m_GUID: e2ee616f895696843997c18a61670416
   m_SerializeEntries:
   - m_GUID: 84c74374546a9374eba8432d8986d9eb
     m_Address: Proto
@@ -29,5 +29,5 @@ MonoBehaviour:
   m_Settings: {fileID: 11400000, guid: 943cb6d64b41a33479c44ebeab5384bf, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: fe16b56585cffdc418b3d3d4f4ffd1d5, type: 2}
-    - {fileID: 11400000, guid: 02f37d1dd9d25cc4b84540f3d11b1b82, type: 2}
+    - {fileID: 11400000, guid: 7191fe16dd3fcaf47bb534bf9f96493e, type: 2}
+    - {fileID: 11400000, guid: 5bd01f5940acf66478668beb3195f47f, type: 2}

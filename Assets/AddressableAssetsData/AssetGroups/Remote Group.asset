@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Default Local Group
+  m_Name: Remote Group
   m_EditorClassIdentifier: 
-  m_GroupName: Default Local Group
+  m_GroupName: Remote Group
   m_Data:
     m_SerializedData: []
-  m_GUID: 91aee5656d14bff4db39a3b89bb720bb
+  m_GUID: c845f2dad5f48ad4d9cdb56b91496b2a
   m_SerializeEntries:
-  - m_GUID: c5c559fed97c9394db64ab736b412fea
-    m_Address: Internal/Prefabs
+  - m_GUID: 5de67b6e787df1546bc6017466b89d3c
+    m_Address: Jump_Jump/Prefabs
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_mainAssetType: 
-    m_MainAsset: {fileID: 102900000, guid: c5c559fed97c9394db64ab736b412fea, type: 3}
-    m_TargetAsset: {fileID: 102900000, guid: c5c559fed97c9394db64ab736b412fea, type: 3}
+    m_MainAsset: {fileID: 102900000, guid: 5de67b6e787df1546bc6017466b89d3c, type: 3}
+    m_TargetAsset: {fileID: 102900000, guid: 5de67b6e787df1546bc6017466b89d3c, type: 3}
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 943cb6d64b41a33479c44ebeab5384bf, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: be2ad225a343b9f4bb0f5636a7ef3a93, type: 2}
-    - {fileID: 11400000, guid: e331b2f1d337e904ca6809fc36e99439, type: 2}
+    - {fileID: 11400000, guid: 4445262001beb7d4e80fd2466031f25d, type: 2}
+    - {fileID: 11400000, guid: 998f199b69ecdc044a530be1c5c1f1a6, type: 2}
