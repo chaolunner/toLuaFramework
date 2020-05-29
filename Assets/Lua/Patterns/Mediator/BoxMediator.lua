@@ -25,6 +25,7 @@ function BoxMediator:HandleNotification(notification)
                 LuaFacade.SendNotification("GameOver")
             else
                 self:UpdateBox()
+                self.gameProxy.score = self.gameProxy.score + 1
             end
             LuaFacade.SendNotification(
                 "ColorChanged",
@@ -40,7 +41,8 @@ function BoxMediator:OnRegister()
     self:super("OnRegister")
     LuaFacade.RegisterProxy("Patterns.Proxy.BoxProxy")
     self.boxProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.BoxProxy")
-    coroutine.start(BoxMediator.OnInitialized, self)
+    self.gameProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.GameProxy")
+    coroutine.start(BoxMediator.InitializeAsync, self)
 end
 
 function BoxMediator:OnRemove()
@@ -49,7 +51,7 @@ function BoxMediator:OnRemove()
     LuaFacade.RemoveProxy("Patterns.Proxy.BoxProxy")
 end
 
-function BoxMediator:OnInitialized()
+function BoxMediator:InitializeAsync()
     while not self.boxProxy.isInitialized do
         coroutine.step()
     end

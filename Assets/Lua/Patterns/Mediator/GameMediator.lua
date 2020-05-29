@@ -7,29 +7,29 @@ local EventTriggerType = require("UnityEngine.EventSystems.EventTriggerType")
 
 function GameMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {"PlayerJumped", "GameOver"}
+    return {"GameOver"}
 end
 
 function GameMediator:HandleNotification(notification)
     self:super("HandleNotification")
-    if notification.Name == "PlayerJumped" then
-        self.score = self.score + 1
-    elseif notification.Name == "GameOver" then
-        self.gameView:OpenEndMenu(self.score - 2)
-        self.score = 0
+    if notification.Name == "GameOver" then
+        self.gameView:OpenEndMenu(self.gameProxy.score)
+        self.gameProxy.score = 0
     end
 end
 
 function GameMediator:OnRegister()
     self:super("OnRegister")
-    self.score = 0
+    LuaFacade.RegisterProxy("Patterns.Proxy.GameProxy")
+    self.gameProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.GameProxy")
     self.gameView = GameView.new()
     self.gameView:Initialize()
-    coroutine.start(GameMediator.OnInitialized, self)
+    coroutine.start(GameMediator.InitializeAsync, self)
 end
 
 function GameMediator:OnRemove()
     self:super("OnRemove")
+    LuaFacade.RemoveProxy("Patterns.Proxy.GameProxy")
 end
 
 function GameMediator:bindButton(btn, evt)
@@ -38,7 +38,7 @@ function GameMediator:bindButton(btn, evt)
     listener:AddListener(self[evt], self)
 end
 
-function GameMediator:OnInitialized()
+function GameMediator:InitializeAsync()
     while not self.gameView.isInitialized do
         coroutine.step()
     end

@@ -6,7 +6,7 @@ local KeyCode = UnityEngine.KeyCode
 
 function PlayerMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {"GameStart", "ColorChanged"}
+    return {"GameStart", "ColorChanged", "GameOver"}
 end
 
 function PlayerMediator:HandleNotification(notification)
@@ -16,6 +16,8 @@ function PlayerMediator:HandleNotification(notification)
     elseif notification.Name == "ColorChanged" then
         local mainModule = self.playerProxy.particleSystem.main
         mainModule.startColor = MinMaxGradient(Color.white, notification.Body.color)
+    elseif notification.Name == "GameOver" then
+        self.playerProxy.rigidbody.isKinematic = true
     end
 end
 
@@ -23,7 +25,7 @@ function PlayerMediator:OnRegister()
     self:super("OnRegister")
     LuaFacade.RegisterProxy("Patterns.Proxy.PlayerProxy")
     self.playerProxy = LuaFacade.RetrieveProxy("Patterns.Proxy.PlayerProxy")
-    coroutine.start(PlayerMediator.OnInitialized, self)
+    coroutine.start(PlayerMediator.InitializeAsync, self)
 end
 
 function PlayerMediator:OnRemove()
@@ -32,12 +34,12 @@ function PlayerMediator:OnRemove()
     LuaFacade.RemoveProxy("Patterns.Proxy.PlayerProxy")
 end
 
-function PlayerMediator:OnInitialized()
+function PlayerMediator:InitializeAsync()
     while not self.playerProxy.isInitialized do
         coroutine.step()
     end
     self.playerProxy.player.transform.position = Vector3(0, -5, 0)
-    self.playerProxy.rigidbody.useGravity = false
+    self.playerProxy.rigidbody.isKinematic = true
     GetOrCreateComponent(self.playerProxy.player, typeof(LuaCollisionEnterListener)):AddListener(
         self.OnCollisionEnter,
         self
@@ -48,7 +50,7 @@ end
 
 function PlayerMediator:Spawn()
     self.playerProxy.player.transform.position = Vector3(0, 0.5, 0)
-    self.playerProxy.rigidbody.useGravity = true
+    self.playerProxy.rigidbody.isKinematic = false
     LuaFacade.SendNotification("PlayerSpawn", {player = self.playerProxy.player})
 end
 
