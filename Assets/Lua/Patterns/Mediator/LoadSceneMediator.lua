@@ -1,31 +1,115 @@
 LoadSceneMediator = class(Mediator)
 
 local LoadSceneView = require("Views.LoadSceneView")
+local LoadSceneMode = require("UnityEngine.SceneManagement.LoadSceneMode")
+
+local function onSceneLoaded(scene, mode)
+    LuaFacade.SendNotification("SceneLoaded", {scene = scene, mode = mode})
+end
+
+local function onSceneUnloaded(scene)
+    LuaFacade.SendNotification("SceneUnloaded", {scene})
+end
 
 function LoadSceneMediator:ListNotificationInterests()
     self:super("ListNotificationInterests")
-    return {}
+    return {"LoadScenes", "SceneLoaded", "SceneUnloaded", "SetupScene"}
 end
 
 function LoadSceneMediator:HandleNotification(notification)
     self:super("HandleNotification")
+    if notification.Name == "LoadScenes" then
+        local levels = notification.Body
+        coroutine.start(LoadSceneMediator.LoadSceneAsync, self, levels)
+    elseif notification.Name == "SceneLoaded" then
+        local scene = notification.Body.scene
+        local mode = notification.Body.mode
+        if self.scenes[scene.name] then
+            self.scenes[scene.name].load()
+        end
+    elseif notification.Name == "SceneUnloaded" then
+        local scene = notification.Body[1]
+        if self.scenes[scene.name] then
+            self.scenes[scene.name].unload()
+        end
+    elseif notification.Name == "SetupScene" then
+        self.scenes[notification.Body.name] = {
+            load = notification.Body.load,
+            unload = notification.Body.unload
+        }
+    end
 end
 
 function LoadSceneMediator:OnRegister()
     self:super("OnRegister")
+    self.scenes = {}
     self.loadSceneView = LoadSceneView.new()
     self.loadSceneView:Initialize()
-    coroutine.start(LoadSceneMediator.InitializeAsync, self)
+    SceneManager.sceneLoaded = SceneManager.sceneLoaded + onSceneLoaded
+    SceneManager.sceneUnloaded = SceneManager.sceneUnloaded + onSceneUnloaded
 end
 
 function LoadSceneMediator:OnRemove()
     self:super("OnRemove")
+    SceneManager.sceneLoaded = SceneManager.sceneLoaded - onSceneLoaded
+    SceneManager.sceneUnloaded = SceneManager.sceneUnloaded - onSceneUnloaded
 end
 
-function LoadSceneMediator:InitializeAsync()
+local function loadSceneAsync(levels)
+    local handles = {}
+    for k, v in ipairs(levels) do
+        if k == 1 then
+            handles[k] = SceneManager.LoadSceneAsync(v, LoadSceneMode.Single)
+        else
+            handles[k] = SceneManager.LoadSceneAsync(v, LoadSceneMode.Additive)
+        end
+        handles[k].allowSceneActivation = false
+    end
+    return handles
+end
+
+local function isDone(handles)
+    for k, v in ipairs(handles) do
+        if not v.isDone then
+            return false
+        end
+    end
+    return true
+end
+
+local function getProgress(handles)
+    local progress = 0
+    local count = 0
+    for k, v in ipairs(handles) do
+        progress = progress + v.progress
+        count = count + 1
+    end
+    return progress / count
+end
+
+function LoadSceneMediator:LoadSceneAsync(levels)
     while not self.loadSceneView.isInitialized do
         coroutine.step()
     end
+    self.loadSceneView:FadeOut()
+    coroutine.wait(1)
+    self.loadSceneView:Load()
+    local handles = loadSceneAsync(levels)
+    local progress = 0
+    while not isDone(handles) and progress < 0.89999 do
+        progress = Mathf.Clamp(progress + Time.deltaTime, progress, getProgress(handles))
+        self.loadSceneView:SetProgress(progress)
+        coroutine.step()
+    end
+    for k, v in ipairs(handles) do
+        v.allowSceneActivation = true
+    end
+    while not isDone(handles) or progress < 1 do
+        progress = Mathf.Clamp(progress + Time.deltaTime, progress, getProgress(handles))
+        self.loadSceneView:SetProgress(progress)
+        coroutine.step()
+    end
+    self.loadSceneView:FadeIn()
 end
 
 return LoadSceneMediator

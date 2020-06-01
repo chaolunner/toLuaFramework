@@ -28,6 +28,7 @@ public class LuaCommand : SimpleCommand
 
     public virtual void OnRemove()
     {
+        commandClass.Call("OnRemove", commandObject);
         commandClass.Dispose();
         commandObject.Dispose();
     }

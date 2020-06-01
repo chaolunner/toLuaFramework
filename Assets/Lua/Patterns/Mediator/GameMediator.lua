@@ -56,7 +56,7 @@ end
 
 function GameMediator:OnGameExit(type, evtData)
     if type == EventTriggerType.PointerClick then
-        SceneManager.LoadSceneAsync(0)
+        UnityEngine.Application.Quit()
     end
 end
 

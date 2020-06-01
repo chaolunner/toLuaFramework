@@ -22,7 +22,6 @@ function Main()
     SceneManager = UnityEngine.SceneManagement.SceneManager
 
     LuaFacade.RegisterCommand("Patterns.Command.StartUpCommand", "StartUp")
-    LuaFacade.RegisterCommand("Patterns.Command.LoadSceneCommand", "LoadScene")
     LuaFacade.SendNotification("StartUp")
 
     print("logic start")
@@ -32,12 +31,10 @@ end
 function OnLevelWasLoaded(level)
     collectgarbage("collect")
     Time.timeSinceLevelLoad = 0
-    LuaFacade.SendNotification("LoadScene", {level = level})
 end
 
 function OnApplicationQuit()
     LuaFacade.RemoveCommand("StartUp")
-    LuaFacade.RemoveCommand("LoadScene")
 end
 
 function class(base)

@@ -203,6 +203,8 @@ public static class LuaBinder
 		L.AddPreLoad("UnityEngine.ParticleSystem.MainModule", LuaOpen_UnityEngine_ParticleSystem_MainModule, typeof(UnityEngine.ParticleSystem.MainModule));
 		L.AddPreLoad("UnityEngine.ParticleSystem.MinMaxGradient", LuaOpen_UnityEngine_ParticleSystem_MinMaxGradient, typeof(UnityEngine.ParticleSystem.MinMaxGradient));
 		L.AddPreLoad("TMPro.TMP_Text", LuaOpen_TMPro_TMP_Text, typeof(TMPro.TMP_Text));
+		L.AddPreLoad("UnityEngine.SceneManagement.Scene", LuaOpen_UnityEngine_SceneManagement_Scene, typeof(UnityEngine.SceneManagement.Scene));
+		L.AddPreLoad("UnityEngine.SceneManagement.LoadSceneMode", LuaOpen_UnityEngine_SceneManagement_LoadSceneMode, typeof(UnityEngine.SceneManagement.LoadSceneMode));
 		L.EndPreLoad();
 		Debugger.Log("Register lua type cost time: {0}", Time.realtimeSinceStartup - t);
 	}
@@ -2016,6 +2018,42 @@ public static class LuaBinder
 			state.BeginPreModule("TMPro");
 			TMPro_TMP_TextWrap.Register(state);
 			int reference = state.GetMetaReference(typeof(TMPro.TMP_Text));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_SceneManagement_Scene(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine.SceneManagement");
+			UnityEngine_SceneManagement_SceneWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.SceneManagement.Scene));
+			state.EndPreModule(L, reference);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int LuaOpen_UnityEngine_SceneManagement_LoadSceneMode(IntPtr L)
+	{
+		try
+		{
+			LuaState state = LuaState.Get(L);
+			state.BeginPreModule("UnityEngine.SceneManagement");
+			UnityEngine_SceneManagement_LoadSceneModeWrap.Register(state);
+			int reference = state.GetMetaReference(typeof(UnityEngine.SceneManagement.LoadSceneMode));
 			state.EndPreModule(L, reference);
 			return 1;
 		}

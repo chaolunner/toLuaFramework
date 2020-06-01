@@ -179,6 +179,8 @@ public static class CustomSettings
         _GT(typeof(ParticleSystem.MinMaxGradient)),
         _GT(typeof(TMPro.TMP_Text)),
         _GT(typeof(UnityEngine.SceneManagement.SceneManager)),
+        _GT(typeof(UnityEngine.SceneManagement.Scene)),
+        _GT(typeof(UnityEngine.SceneManagement.LoadSceneMode)),
     };
 
     public static List<Type> dynamicList = new List<Type>()
@@ -216,6 +218,8 @@ public static class CustomSettings
         typeof(ParticleSystem.MainModule),
         typeof(ParticleSystem.MinMaxGradient),
         typeof(TMPro.TMP_Text),
+        typeof(UnityEngine.SceneManagement.Scene),
+        typeof(UnityEngine.SceneManagement.LoadSceneMode),
     };
 
     //重载函数，相同参数个数，相同位置out参数匹配出问题时, 需要强制匹配解决
