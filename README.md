@@ -54,6 +54,8 @@ Build版本toLua报错？
     - **Tools->Check for Content Update Restrications**
     - **Build->Update a Previous Build**
 
+- 太麻烦，想要一键增量更新？ 看这里，看这里。首先 **Tools->Check for Content Update**，然后 **Tools->Build->Content Update**，搞定！
+
 - 怎么发布到服务器？
   - 下载 [XAMPP](https://www.apachefriends.org/download.html) Apache Http Server
   - 域名映射

@@ -10,6 +10,7 @@ using System.IO;
 public class LuaFacade
 {
     private static Dictionary<string, LuaCommand> commandMap = new Dictionary<string, LuaCommand>();
+    private const int UseExistingBuild = 2;
 
     private static IFacade facade
     {
@@ -27,7 +28,7 @@ public class LuaFacade
         }
     }
 
-    public static IEnumerator UpdateLocalScripts()
+    public static IEnumerator UpdateLocalScripts(bool forceUpdate = false)
     {
         if (!Directory.Exists(LuaConst.luaResDir))
         {
@@ -39,6 +40,12 @@ public class LuaFacade
         for (int i = 0; i < resHandle.Result.Count; i++)
         {
             string key = resHandle.Result[i].PrimaryKey;
+            if (!forceUpdate)
+            {
+                var downloadSizeHandle = Addressables.GetDownloadSizeAsync(key);
+                yield return downloadSizeHandle;
+                if (downloadSizeHandle.Result == 0) { continue; }
+            }
             var loadHandle = Addressables.LoadAssetAsync<TextAsset>(key);
             yield return loadHandle;
             if (key.StartsWith("ToLua"))
@@ -77,6 +84,11 @@ public class LuaFacade
 
     public static void Initialize()
     {
+#if UNITY_EDITOR
+        if (UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings.ActivePlayModeDataBuilderIndex == UseExistingBuild && !Directory.Exists(LuaConst.luaResDir)) { return; }
+#else
+        if (!Directory.Exists(LuaConst.luaResDir)) { return; }
+#endif
         var go = new GameObject("LuaClient");
         go.AddComponent<LuaClient>();
         GameObject.DontDestroyOnLoad(go);

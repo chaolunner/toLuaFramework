@@ -66,6 +66,26 @@ public class AddressablesEditor
         AddressableAssetSettings.BuildPlayerContent();
     }
 
+    [MenuItem("Tools/Addressables/Check for Content Update")]
+    public static void CheckForContentUpdate()
+    {
+        BuildLuaAndProto();
+        var buildPath = ContentUpdateScript.GetContentStateDataPath(false);
+        var settings = AddressableAssetSettingsDefaultObject.Settings;
+        var entrys = ContentUpdateScript.GatherModifiedEntries(settings, buildPath);
+        if (entrys.Count == 0) { return; }
+        var groupName = string.Format("UpdateGroup_{0}", System.DateTime.Now.ToString("yyyyMMdd"));
+        ContentUpdateScript.CreateContentUpdateGroup(settings, entrys, groupName);
+    }
+
+    [MenuItem("Tools/Addressables/Build/Content Update")]
+    public static void BuildContentUpdate()
+    {
+        var buildPath = ContentUpdateScript.GetContentStateDataPath(false);
+        var settings = AddressableAssetSettingsDefaultObject.Settings;
+        ContentUpdateScript.BuildContentUpdate(settings, buildPath);
+    }
+
     [MenuItem("Tools/Addressables/Build/Lua + Proto")]
     public static void BuildLuaAndProto()
     {

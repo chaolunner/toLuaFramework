@@ -22,7 +22,6 @@ function Main()
     SceneManager = UnityEngine.SceneManagement.SceneManager
 
     LuaFacade.RegisterCommand("Patterns.Command.StartUpCommand", "StartUp")
-    LuaFacade.SendNotification("StartUp")
 
     print("logic start")
 end
