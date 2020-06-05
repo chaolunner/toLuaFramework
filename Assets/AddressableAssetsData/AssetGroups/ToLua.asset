@@ -16,7 +16,14 @@ MonoBehaviour:
   m_Data:
     m_SerializedData: []
   m_GUID: f2745feabd47a114da9623c82a37fd2a
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 579053b04468b18448d69d11ff04e78e
+    m_Address: ToLua
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - lua
+    m_MainAsset: {fileID: 0}
+    m_TargetAsset: {fileID: 0}
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 943cb6d64b41a33479c44ebeab5384bf, type: 2}
   m_SchemaSet:

@@ -17,11 +17,22 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 91aee5656d14bff4db39a3b89bb720bb
   m_SerializeEntries:
+  - m_GUID: 41f9fcad4e07e5241b5ce9bba44b1ce6
+    m_Address: Jump_Jump/Materials
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    m_MainAsset: {fileID: 102900000, guid: 41f9fcad4e07e5241b5ce9bba44b1ce6, type: 3}
+    m_TargetAsset: {fileID: 102900000, guid: 41f9fcad4e07e5241b5ce9bba44b1ce6, type: 3}
+  - m_GUID: 5de67b6e787df1546bc6017466b89d3c
+    m_Address: Jump_Jump/Prefabs
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    m_MainAsset: {fileID: 102900000, guid: 5de67b6e787df1546bc6017466b89d3c, type: 3}
+    m_TargetAsset: {fileID: 102900000, guid: 5de67b6e787df1546bc6017466b89d3c, type: 3}
   - m_GUID: c5c559fed97c9394db64ab736b412fea
     m_Address: Internal/Prefabs
     m_ReadOnly: 0
     m_SerializedLabels: []
-    m_mainAssetType: 
     m_MainAsset: {fileID: 102900000, guid: c5c559fed97c9394db64ab736b412fea, type: 3}
     m_TargetAsset: {fileID: 102900000, guid: c5c559fed97c9394db64ab736b412fea, type: 3}
   m_ReadOnly: 0

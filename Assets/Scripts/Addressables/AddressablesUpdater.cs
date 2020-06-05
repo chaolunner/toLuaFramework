@@ -1,7 +1,5 @@
-﻿using UnityEngine.ResourceManagement.ResourceProviders;
-using UnityEngine.ResourceManagement.ResourceLocations;
+﻿using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.AddressableAssets.ResourceLocators;
-using UnityEngine.ResourceManagement.Util;
 using UnityEngine.AddressableAssets;
 using System.Collections.Generic;
 using System.Collections;
@@ -27,8 +25,7 @@ public class AddressablesUpdater : MonoBehaviour
 
     private long downloadSize = 0;
     private IList<IResourceLocator> updateLocators;
-    private Dictionary<int, long> sizeMap = new Dictionary<int, long>();
-    private Dictionary<string, long> bundleSizeMap = new Dictionary<string, long>();
+    private IList<object> updateKeys;
 
     private static string addressablesDir = Application.persistentDataPath + "/" + addressablesFolder;
     private static string originalDir = Application.persistentDataPath + "/" + originalFolder;
@@ -47,23 +44,21 @@ public class AddressablesUpdater : MonoBehaviour
     {
         var initHandle = Addressables.InitializeAsync();
         yield return initHandle;
+        Addressables.Release(initHandle);
         var checkHandle = Addressables.CheckForCatalogUpdates(false);
         yield return checkHandle;
         var catalogs = checkHandle.Result;
         Addressables.Release(checkHandle);
         if (catalogs == null || catalogs.Count <= 0) { yield break; }
         SaveOriginalCatalogs();
-        yield return StartCoroutine(InitializeBundleSizeMapAsync());
         yield return StartCoroutine(UpdateCatalogsAsync(catalogs));
-        CalculateUpdateSize();
+        yield return StartCoroutine(CalculateUpdateSizeAsync());
         if (downloadSize <= 0) { yield break; }
         yield return StartCoroutine(RequestDownloadHandle?.Invoke(downloadSize));
-        if (Result == RequestDownloadResult.Disagree)
-        {
-            yield return StartCoroutine(CancelDownloadAsync());
-            yield break;
-        }
-        DeleteOriginalCatalogs();
+        if (Result == RequestDownloadResult.Agree) { DeleteOriginalCatalogs(); }
+        else { CancelDownload(); }
+        yield return StartCoroutine(UpdateResourceLocatorsAsync());
+        if (Result == RequestDownloadResult.Disagree) { yield break; }
         yield return StartCoroutine(DownloadAsync());
         OnDownloadCompleted?.Invoke(downloadSize);
         yield return StartCoroutine(AfterDownloadHandle?.Invoke());
@@ -74,91 +69,43 @@ public class AddressablesUpdater : MonoBehaviour
         LoadOriginalCatalogs();
     }
 
-    private IEnumerator InitializeBundleSizeMapAsync()
-    {
-        bundleSizeMap.Clear();
-        if (!Directory.Exists(addressablesDir)) { yield break; }
-        var catalogPaths = GetCatalogs(addressablesDir, "json", SearchOption.TopDirectoryOnly);
-        for (int i = 0; i < catalogPaths.Length; i++)
-        {
-            var catalogHandle = Addressables.LoadContentCatalogAsync(catalogPaths[i]);
-            yield return catalogHandle;
-            IList<IResourceLocation> locations;
-            var locator = catalogHandle.Result;
-            var e = locator.Keys.GetEnumerator();
-            while (e.MoveNext())
-            {
-                if (locator.Locate(e.Current, typeof(object), out locations))
-                {
-                    for (int k = 0; k < locations.Count; k++)
-                    {
-                        if (bundleSizeMap.ContainsKey(locations[k].InternalId)) { continue; }
-                        if (ResourceManagerConfig.IsPathRemote(locations[k].InternalId) && locations[k].Data != null && locations[k].Data is AssetBundleRequestOptions)
-                        {
-                            bundleSizeMap.Add(locations[k].InternalId, 0);
-                        }
-                    }
-                }
-            }
-            Addressables.Release(catalogHandle);
-        }
-    }
-
     private IEnumerator UpdateCatalogsAsync(List<string> catalogs)
     {
         var updateHandle = Addressables.UpdateCatalogs(catalogs, false);
         yield return updateHandle;
         downloadSize = 0;
-        sizeMap = new Dictionary<int, long>();
+        updateKeys = new List<object>();
         updateLocators = updateHandle.Result;
         Addressables.Release(updateHandle);
     }
 
-    private void CalculateUpdateSize()
+    private IEnumerator CalculateUpdateSizeAsync()
     {
         for (int i = 0; i < updateLocators.Count; i++)
         {
             IList<IResourceLocation> locations;
             var e = updateLocators[i].Keys.GetEnumerator();
-            var index = 0;
             while (e.MoveNext())
             {
-                long size = 0;
                 if (updateLocators[i].Locate(e.Current, typeof(object), out locations))
                 {
-                    for (int k = 0; k < locations.Count; k++)
+                    for (int j = 0; j < locations.Count; j++)
                     {
-                        if (bundleSizeMap.ContainsKey(locations[k].InternalId)) { continue; }
-                        if (ResourceManagerConfig.IsPathRemote(locations[k].InternalId) && locations[k].Data != null && locations[k].Data is AssetBundleRequestOptions)
-                        {
-                            long bundleSize = (locations[k].Data as AssetBundleRequestOptions).BundleSize;
-                            size += bundleSize;
-                            bundleSizeMap.Add(locations[k].InternalId, bundleSize);
-                        }
+                        if (updateKeys.Contains(locations[j].PrimaryKey)) { continue; }
+                        updateKeys.Add(locations[j].PrimaryKey);
                     }
                 }
-                sizeMap.Add(index, size);
-                downloadSize += size;
-                index++;
             }
         }
+        var downloadSizeHandle = Addressables.GetDownloadSizeAsync(updateKeys);
+        yield return downloadSizeHandle;
+        downloadSize = downloadSizeHandle.Result;
+        Addressables.Release(downloadSizeHandle);
     }
 
-    private IEnumerator CancelDownloadAsync()
+    private void CancelDownload()
     {
         LoadOriginalCatalogs();
-        for (int i = 0; i < updateLocators.Count; i++)
-        {
-            Addressables.RemoveResourceLocator(updateLocators[i]);
-        }
-        var catalogPaths = GetCatalogs(addressablesDir, "json", SearchOption.TopDirectoryOnly);
-        for (int i = 0; i < catalogPaths.Length; i++)
-        {
-            var catalogHandle = Addressables.LoadContentCatalogAsync(catalogPaths[i]);
-            yield return catalogHandle;
-            Addressables.AddResourceLocator(catalogHandle.Result);
-            Addressables.Release(catalogHandle);
-        }
 #if UNITY_EDITOR
         Debug.Log(string.Format("Cancel Download Size: {0}", downloadSize));
 #endif
@@ -166,36 +113,33 @@ public class AddressablesUpdater : MonoBehaviour
 
     private IEnumerator DownloadAsync()
     {
-        long size = 0;
-        for (int i = 0; i < updateLocators.Count; i++)
+        long downloadedSize = 0;
+        for (int i = 0; i < updateKeys.Count; i++)
         {
-            IList<IResourceLocation> locations;
-            var e = updateLocators[i].Keys.GetEnumerator();
-            var index = 0;
-            while (e.MoveNext())
+            var downloadSizeHandle = Addressables.GetDownloadSizeAsync(updateKeys[i]);
+            yield return downloadSizeHandle;
+            long size = downloadSizeHandle.Result;
+            Addressables.Release(downloadSizeHandle);
+            if (size <= 0) { continue; }
+
+            var downloadHandle = Addressables.DownloadDependenciesAsync(updateKeys[i]);
+            while (downloadHandle.PercentComplete < 1 && !downloadHandle.IsDone)
             {
-                if (updateLocators[i].Locate(e.Current, typeof(object), out locations))
-                {
-                    var downloadHandle = Addressables.DownloadDependenciesAsync(locations);
-                    while (downloadHandle.PercentComplete < 1 && !downloadHandle.IsDone)
-                    {
-                        OnDownload?.Invoke(size + (long)(downloadHandle.PercentComplete * sizeMap[index]), downloadSize);
+                OnDownload?.Invoke(downloadedSize + (long)(downloadHandle.PercentComplete * size), downloadSize);
 #if UNITY_EDITOR
-                        Debug.Log(string.Format("Download Size: {0}/{1}", size + (long)(downloadHandle.PercentComplete * sizeMap[index]), downloadSize));
+                Debug.Log(string.Format("Download Size: {0}/{1}", downloadedSize + (long)(downloadHandle.PercentComplete * size), downloadSize));
 #endif
-                        yield return null;
-                    }
-                    size += sizeMap[index];
-                    Addressables.Release(downloadHandle);
-                }
-                index++;
+                yield return null;
             }
+            downloadedSize += size;
+            Addressables.Release(downloadHandle);
+            if (downloadedSize >= downloadSize) { break; }
         }
     }
 
     private string[] GetCatalogs(string path, string suffix, SearchOption searchOption)
     {
-        return Directory.GetFiles(path, "catalog_*." + suffix, searchOption);
+        return Directory.GetFiles(path, "catalog*." + suffix, searchOption);
     }
 
     private string[] GetCatalogs(string path, SearchOption searchOption)
@@ -214,11 +158,39 @@ public class AddressablesUpdater : MonoBehaviour
         return result;
     }
 
+    private IEnumerator UpdateResourceLocatorsAsync()
+    {
+        Addressables.ClearResourceLocators();
+
+        if (Directory.Exists(addressablesDir))
+        {
+            string[] catalogs = GetCatalogs(addressablesDir, "json", SearchOption.TopDirectoryOnly);
+            for (int i = 0; i < catalogs.Length; i++)
+            {
+                var catalogHandle = Addressables.LoadContentCatalogAsync(catalogs[i]);
+                yield return catalogHandle;
+                Addressables.AddResourceLocator(catalogHandle.Result);
+                Addressables.Release(catalogHandle);
+            }
+        }
+        else
+        {
+            string[] catalogs = GetCatalogs(Addressables.RuntimePath, "json", SearchOption.TopDirectoryOnly);
+            for (int i = 0; i < catalogs.Length; i++)
+            {
+                var catalogHandle = Addressables.LoadContentCatalogAsync(catalogs[i]);
+                yield return catalogHandle;
+                Addressables.AddResourceLocator(catalogHandle.Result);
+                Addressables.Release(catalogHandle);
+            }
+        }
+    }
+
     private void SaveOriginalCatalogs()
     {
+        if (!Directory.Exists(originalDir)) { Directory.CreateDirectory(originalDir); }
         if (!Directory.Exists(addressablesDir)) { return; }
         var catalogs = GetCatalogs(addressablesDir, SearchOption.TopDirectoryOnly);
-        if (!Directory.Exists(originalDir)) { Directory.CreateDirectory(originalDir); }
         for (int i = 0; i < catalogs.Length; i++)
         {
             File.Copy(catalogs[i], catalogs[i].Replace(addressablesFolder, originalFolder));
@@ -243,9 +215,6 @@ public class AddressablesUpdater : MonoBehaviour
 
     private void DeleteOriginalCatalogs()
     {
-        if (Directory.Exists(originalDir))
-        {
-            Directory.Delete(originalDir, true);
-        }
+        if (Directory.Exists(originalDir)) { Directory.Delete(originalDir, true); }
     }
 }

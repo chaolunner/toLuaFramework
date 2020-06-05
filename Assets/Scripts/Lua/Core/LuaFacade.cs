@@ -40,25 +40,25 @@ public class LuaFacade
         for (int i = 0; i < resHandle.Result.Count; i++)
         {
             string key = resHandle.Result[i].PrimaryKey;
-            if (!forceUpdate)
+            if (!key.StartsWith("ToLua")) { continue; }
+            string path = string.Format("{0}/{1}", LuaConst.luaResDir, key.Substring(5, key.Length - 11));
+            if (!forceUpdate && File.Exists(path))
             {
                 var downloadSizeHandle = Addressables.GetDownloadSizeAsync(key);
                 yield return downloadSizeHandle;
-                if (downloadSizeHandle.Result == 0) { continue; }
+                if (downloadSizeHandle.Result == 0) { Addressables.Release(downloadSizeHandle); continue; }
             }
             var loadHandle = Addressables.LoadAssetAsync<TextAsset>(key);
             yield return loadHandle;
-            if (key.StartsWith("ToLua"))
-            {
-                string path = string.Format("{0}/{1}", LuaConst.luaResDir, key.Substring(5, key.Length - 11));
-                string dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
-                File.WriteAllText(path, loadHandle.Result.text);
-            }
+            string dir = Path.GetDirectoryName(path);
+            if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
+            File.WriteAllText(path, loadHandle.Result.text);
+            Addressables.Release(loadHandle);
         }
+        Addressables.Release(resHandle);
     }
 
-    public static IEnumerator UpdateLocalProtos()
+    public static IEnumerator UpdateLocalProtos(bool forceUpdate = false)
     {
         if (!Directory.Exists(ProtoConst.protoResDir))
         {
@@ -70,16 +70,22 @@ public class LuaFacade
         for (int i = 0; i < resHandle.Result.Count; i++)
         {
             string key = resHandle.Result[i].PrimaryKey;
+            if (!key.StartsWith(ProtoConst.address)) { continue; }
+            string path = string.Format("{0}/{1}", ProtoConst.protoResDir, key.Substring(5, key.Length - 11));
+            if (!forceUpdate && File.Exists(path))
+            {
+                var downloadSizeHandle = Addressables.GetDownloadSizeAsync(key);
+                yield return downloadSizeHandle;
+                if (downloadSizeHandle.Result == 0) { Addressables.Release(downloadSizeHandle); continue; }
+            }
             var loadHandle = Addressables.LoadAssetAsync<TextAsset>(key);
             yield return loadHandle;
-            if (key.StartsWith(ProtoConst.address))
-            {
-                string path = string.Format("{0}/{1}", ProtoConst.protoResDir, key.Substring(5, key.Length - 11));
-                string dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
-                File.WriteAllBytes(path, loadHandle.Result.bytes);
-            }
+            string dir = Path.GetDirectoryName(path);
+            if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); }
+            File.WriteAllBytes(path, loadHandle.Result.bytes);
+            Addressables.Release(loadHandle);
         }
+        Addressables.Release(resHandle);
     }
 
     public static void Initialize()

@@ -8,8 +8,8 @@ public static class LuaAddressables
         return Addressables.LoadAssetAsync<object>(key);
     }
 
-    public static AsyncOperationHandle<long> GetDownloadSizeAsync(object key)
+    public static void Release(AsyncOperationHandle<object> handle)
     {
-        return Addressables.GetDownloadSizeAsync(key);
+        Addressables.Release(handle);
     }
 }

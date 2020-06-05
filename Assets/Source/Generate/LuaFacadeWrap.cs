@@ -33,10 +33,25 @@ public class LuaFacadeWrap
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 0);
-			System.Collections.IEnumerator o = LuaFacade.UpdateLocalScripts();
-			ToLua.Push(L, o);
-			return 1;
+			int count = LuaDLL.lua_gettop(L);
+
+			if (count == 0)
+			{
+				System.Collections.IEnumerator o = LuaFacade.UpdateLocalScripts();
+				ToLua.Push(L, o);
+				return 1;
+			}
+			else if (count == 1)
+			{
+				bool arg0 = LuaDLL.luaL_checkboolean(L, 1);
+				System.Collections.IEnumerator o = LuaFacade.UpdateLocalScripts(arg0);
+				ToLua.Push(L, o);
+				return 1;
+			}
+			else
+			{
+				return LuaDLL.luaL_throw(L, "invalid arguments to method: LuaFacade.UpdateLocalScripts");
+			}
 		}
 		catch (Exception e)
 		{

@@ -8,7 +8,7 @@ public class LuaAddressablesWrap
 	{
 		L.BeginStaticLibs("LuaAddressables");
 		L.RegFunction("LoadAssetAsync", LoadAssetAsync);
-		L.RegFunction("GetDownloadSizeAsync", GetDownloadSizeAsync);
+		L.RegFunction("Release", Release);
 		L.EndStaticLibs();
 	}
 
@@ -30,15 +30,14 @@ public class LuaAddressablesWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int GetDownloadSizeAsync(IntPtr L)
+	static int Release(IntPtr L)
 	{
 		try
 		{
 			ToLua.CheckArgsCount(L, 1);
-			object arg0 = ToLua.ToVarObject(L, 1);
-			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<long> o = LuaAddressables.GetDownloadSizeAsync(arg0);
-			ToLua.PushValue(L, o);
-			return 1;
+			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> arg0 = StackTraits<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>.Check(L, 1);
+			LuaAddressables.Release(arg0);
+			return 0;
 		}
 		catch (Exception e)
 		{

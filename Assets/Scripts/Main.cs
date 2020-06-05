@@ -10,9 +10,13 @@ public static class Main
     [RuntimeInitializeOnLoadMethod]
     private static void Initialize()
     {
-#if UNITY_EDITOR
-        UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings.DisableCatalogUpdateOnStartup = true;
-#endif
+        CoroutineManager.DoCoroutine(InitializeAsync());
+    }
+
+    private static IEnumerator InitializeAsync()
+    {
+        yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalScripts());
+        yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalProtos());
         LuaFacade.Initialize();
         AddressablesUpdater.RequestDownloadHandle = OnRequestDownload;
         AddressablesUpdater.OnDownload += OnDownload;
@@ -23,56 +27,51 @@ public static class Main
 
     private static IEnumerator OnRequestDownload(long downloadSize)
     {
-        if (LuaClient.Instance)
+        hotUpdateClass = LuaFacade.GetTable("HotUpdate");
+        hotUpdateObject = hotUpdateClass.Invoke<LuaTable>("new");
+        hotUpdateClass.Call("Initialize", hotUpdateObject, downloadSize);
+        yield return null;
+        while (!hotUpdateClass.Invoke<LuaTable, bool>("Response", hotUpdateObject))
         {
-            yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalScripts());
-            hotUpdateClass = LuaFacade.GetTable("HotUpdate");
-            hotUpdateObject = hotUpdateClass.Invoke<LuaTable>("new");
-            hotUpdateClass.Call("Initialize", hotUpdateObject, downloadSize);
             yield return null;
-            while (hotUpdateClass.Invoke<LuaTable, long, bool>("Request", hotUpdateObject, downloadSize))
-            {
-                yield return null;
-            }
-            AddressablesUpdater.Result = hotUpdateClass.Invoke<LuaTable, bool>("Result", hotUpdateObject) ? RequestDownloadResult.Agree : RequestDownloadResult.Disagree;
+        }
+        if (hotUpdateClass.Invoke<LuaTable, bool>("Result", hotUpdateObject))
+        {
+            AddressablesUpdater.Result = RequestDownloadResult.Agree;
         }
         else
         {
-            AddressablesUpdater.Result = RequestDownloadResult.Agree;
+            AddressablesUpdater.Result = RequestDownloadResult.Disagree;
         }
     }
 
     private static IEnumerator OnAfterDownload()
     {
         yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalScripts(true));
-        yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalProtos());
+        yield return CoroutineManager.DoCoroutine(LuaFacade.UpdateLocalProtos(true));
     }
 
     private static void OnDownload(long downloadedSize, long downloadSize)
     {
-        if (LuaClient.Instance)
-        {
-            hotUpdateClass.Call("Download", hotUpdateObject, downloadedSize, downloadSize);
-        }
+        if (hotUpdateClass == null || hotUpdateObject == null) { return; }
+        hotUpdateClass.Call("Download", hotUpdateObject, downloadedSize, downloadSize);
     }
 
     private static void OnCompleted()
     {
-        if (LuaClient.Instance)
-        {
-            GameObject.DestroyImmediate(LuaClient.Instance.gameObject);
-        }
         if (hotUpdateClass != null)
         {
+            if (hotUpdateObject != null)
+            {
+                hotUpdateClass.Call("OnDestroy", hotUpdateObject);
+                hotUpdateObject.Dispose();
+                hotUpdateObject = null;
+            }
             hotUpdateClass.Dispose();
             hotUpdateClass = null;
+            GameObject.DestroyImmediate(LuaClient.Instance.gameObject);
+            LuaFacade.Initialize();
         }
-        if (hotUpdateObject != null)
-        {
-            hotUpdateObject.Dispose();
-            hotUpdateObject = null;
-        }
-        LuaFacade.Initialize();
         LuaFacade.SendNotification("StartUp");
     }
 }

@@ -62,6 +62,10 @@ public class AddressablesEditor
     [MenuItem("Tools/Addressables/Build/All")]
     public static void BuildAll()
     {
+#if UNITY_EDITOR
+        AddressableAssetSettingsDefaultObject.Settings.DisableCatalogUpdateOnStartup = true;
+        AddressableAssetSettingsDefaultObject.Settings.BuildRemoteCatalog = true;
+#endif
         BuildLuaAndProto();
         AddressableAssetSettings.BuildPlayerContent();
     }

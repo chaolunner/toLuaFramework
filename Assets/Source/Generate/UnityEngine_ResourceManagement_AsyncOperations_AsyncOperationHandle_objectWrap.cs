@@ -7,18 +7,18 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	public static void Register(LuaState L)
 	{
 		L.BeginClass(typeof(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>), null, "AsyncOperationHandle_object");
-		L.RegFunction("GetHashCode", GetHashCode);
 		L.RegFunction("Equals", Equals);
+		L.RegFunction("GetHashCode", GetHashCode);
 		L.RegFunction("IsValid", IsValid);
 		L.RegFunction("New", _CreateUnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
 		L.RegFunction("__tostring", ToLua.op_ToString);
-		L.RegVar("Task", get_Task, null);
 		L.RegVar("DebugName", get_DebugName, null);
-		L.RegVar("PercentComplete", get_PercentComplete, null);
-		L.RegVar("Status", get_Status, null);
-		L.RegVar("OperationException", get_OperationException, null);
-		L.RegVar("Result", get_Result, null);
 		L.RegVar("IsDone", get_IsDone, null);
+		L.RegVar("OperationException", get_OperationException, null);
+		L.RegVar("PercentComplete", get_PercentComplete, null);
+		L.RegVar("Result", get_Result, null);
+		L.RegVar("Status", get_Status, null);
+		L.RegVar("Task", get_Task, null);
 		L.RegVar("Completed", get_Completed, set_Completed);
 		L.RegVar("CompletedTypeless", get_CompletedTypeless, set_CompletedTypeless);
 		L.RegVar("Destroyed", get_Destroyed, set_Destroyed);
@@ -34,14 +34,15 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int GetHashCode(IntPtr L)
+	static int Equals(IntPtr L)
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 1);
+			ToLua.CheckArgsCount(L, 2);
 			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)ToLua.CheckObject(L, 1, typeof(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>));
-			int o = obj.GetHashCode();
-			LuaDLL.lua_pushinteger(L, o);
+			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> arg0 = StackTraits<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>.Check(L, 2);
+			bool o = obj.Equals(arg0);
+			LuaDLL.lua_pushboolean(L, o);
 			ToLua.SetBack(L, 1, obj);
 			return 1;
 		}
@@ -52,15 +53,14 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int Equals(IntPtr L)
+	static int GetHashCode(IntPtr L)
 	{
 		try
 		{
-			ToLua.CheckArgsCount(L, 2);
+			ToLua.CheckArgsCount(L, 1);
 			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)ToLua.CheckObject(L, 1, typeof(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>));
-			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> arg0 = StackTraits<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>.Check(L, 2);
-			bool o = obj.Equals(arg0);
-			LuaDLL.lua_pushboolean(L, o);
+			int o = obj.GetHashCode();
+			LuaDLL.lua_pushinteger(L, o);
 			ToLua.SetBack(L, 1, obj);
 			return 1;
 		}
@@ -89,25 +89,6 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int get_Task(IntPtr L)
-	{
-		object o = null;
-
-		try
-		{
-			o = ToLua.ToObject(L, 1);
-			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)o;
-			System.Threading.Tasks.Task<object> ret = obj.Task;
-			ToLua.PushObject(L, ret);
-			return 1;
-		}
-		catch(Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Task on a nil value");
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int get_DebugName(IntPtr L)
 	{
 		object o = null;
@@ -127,7 +108,7 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int get_PercentComplete(IntPtr L)
+	static int get_IsDone(IntPtr L)
 	{
 		object o = null;
 
@@ -135,32 +116,13 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 		{
 			o = ToLua.ToObject(L, 1);
 			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)o;
-			float ret = obj.PercentComplete;
-			LuaDLL.lua_pushnumber(L, ret);
+			bool ret = obj.IsDone;
+			LuaDLL.lua_pushboolean(L, ret);
 			return 1;
 		}
 		catch(Exception e)
 		{
-			return LuaDLL.toluaL_exception(L, e, o, "attempt to index PercentComplete on a nil value");
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int get_Status(IntPtr L)
-	{
-		object o = null;
-
-		try
-		{
-			o = ToLua.ToObject(L, 1);
-			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)o;
-			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus ret = obj.Status;
-			ToLua.Push(L, ret);
-			return 1;
-		}
-		catch(Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Status on a nil value");
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index IsDone on a nil value");
 		}
 	}
 
@@ -184,6 +146,25 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_PercentComplete(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)o;
+			float ret = obj.PercentComplete;
+			LuaDLL.lua_pushnumber(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index PercentComplete on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int get_Result(IntPtr L)
 	{
 		object o = null;
@@ -203,7 +184,7 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int get_IsDone(IntPtr L)
+	static int get_Status(IntPtr L)
 	{
 		object o = null;
 
@@ -211,13 +192,32 @@ public class UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle
 		{
 			o = ToLua.ToObject(L, 1);
 			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)o;
-			bool ret = obj.IsDone;
-			LuaDLL.lua_pushboolean(L, ret);
+			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus ret = obj.Status;
+			ToLua.Push(L, ret);
 			return 1;
 		}
 		catch(Exception e)
 		{
-			return LuaDLL.toluaL_exception(L, e, o, "attempt to index IsDone on a nil value");
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Status on a nil value");
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int get_Task(IntPtr L)
+	{
+		object o = null;
+
+		try
+		{
+			o = ToLua.ToObject(L, 1);
+			UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object> obj = (UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)o;
+			System.Threading.Tasks.Task<object> ret = obj.Task;
+			ToLua.PushObject(L, ret);
+			return 1;
+		}
+		catch(Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Task on a nil value");
 		}
 	}
 
