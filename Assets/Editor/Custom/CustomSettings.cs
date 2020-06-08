@@ -161,6 +161,8 @@ public static class CustomSettings
         _GT(typeof(LuaFacade)),
         _GT(typeof(LuaAddressables)),
         _GT(typeof(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>)),
+        _GT(typeof(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>)),
+        _GT(typeof(UnityEngine.ResourceManagement.ResourceProviders.SceneInstance)),
         _GT(typeof(UnityEngine.Random)),
         _GT(typeof(PureMVC.Patterns.Observer.Notification)),
         _GT(typeof(LuaMediator)),

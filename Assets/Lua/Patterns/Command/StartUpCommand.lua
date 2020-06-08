@@ -21,7 +21,7 @@ function StartUpCommand:Execute(notification)
             end
         }
     )
-    LuaFacade.SendNotification("LoadScenes", {1})
+    LuaFacade.SendNotification("LoadScenes", {levels = {"Jump_Jump"}, assetbundle = true})
 end
 
 function StartUpCommand:OnRemove()

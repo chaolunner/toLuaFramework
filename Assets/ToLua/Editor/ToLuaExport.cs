@@ -170,6 +170,8 @@ public static class ToLuaExport
 
         // 添加自 toLuaFramework
         "MeshRenderer.receiveGI",
+        "MeshRenderer.scaleInLightmap",
+        "MeshRenderer.stitchLightmapSeams",
     };
 
     class _MethodBase

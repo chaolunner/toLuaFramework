@@ -66,6 +66,7 @@ public class DelegateFactory
 		dict.Add(typeof(System.Action<UnityEngine.AsyncOperation>), factory.System_Action_UnityEngine_AsyncOperation);
 		dict.Add(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>), factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
 		dict.Add(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>), factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
+		dict.Add(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>>), factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance);
 		dict.Add(typeof(UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode>), factory.UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode);
 		dict.Add(typeof(UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene>), factory.UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene);
 		dict.Add(typeof(UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene>), factory.UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene);
@@ -119,6 +120,7 @@ public class DelegateFactory
 		DelegateTraits<System.Action<UnityEngine.AsyncOperation>>.Init(factory.System_Action_UnityEngine_AsyncOperation);
 		DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Init(factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
 		DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Init(factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
+		DelegateTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>>>.Init(factory.System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance);
 		DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode>>.Init(factory.UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode);
 		DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene>>.Init(factory.UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene);
 		DelegateTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene>>.Init(factory.UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene);
@@ -172,6 +174,7 @@ public class DelegateFactory
 		TypeTraits<System.Action<UnityEngine.AsyncOperation>>.Init(factory.Check_System_Action_UnityEngine_AsyncOperation);
 		TypeTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Init(factory.Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object);
 		TypeTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Init(factory.Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle);
+		TypeTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>>>.Init(factory.Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance);
 		TypeTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode>>.Init(factory.Check_UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode);
 		TypeTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene>>.Init(factory.Check_UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene);
 		TypeTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene>>.Init(factory.Check_UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene);
@@ -225,6 +228,7 @@ public class DelegateFactory
 		StackTraits<System.Action<UnityEngine.AsyncOperation>>.Push = factory.Push_System_Action_UnityEngine_AsyncOperation;
 		StackTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<object>>>.Push = factory.Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_object;
 		StackTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle>>.Push = factory.Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle;
+		StackTraits<System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>>>.Push = factory.Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance;
 		StackTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.LoadSceneMode>>.Push = factory.Push_UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_LoadSceneMode;
 		StackTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene>>.Push = factory.Push_UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene;
 		StackTraits<UnityEngine.Events.UnityAction<UnityEngine.SceneManagement.Scene,UnityEngine.SceneManagement.Scene>>.Push = factory.Push_UnityEngine_Events_UnityAction_UnityEngine_SceneManagement_Scene_UnityEngine_SceneManagement_Scene;
@@ -3170,6 +3174,63 @@ public class DelegateFactory
 	}
 
 	void Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle(IntPtr L, System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle> o)
+	{
+		ToLua.Push(L, o);
+	}
+
+	class System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event : LuaDelegate
+	{
+		public System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event(LuaFunction func) : base(func) { }
+		public System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event(LuaFunction func, LuaTable self) : base(func, self) { }
+
+		public void Call(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance> param0)
+		{
+			func.BeginPCall();
+			func.PushValue(param0);
+			func.PCall();
+			func.EndPCall();
+		}
+
+		public void CallWithSelf(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance> param0)
+		{
+			func.BeginPCall();
+			func.Push(self);
+			func.PushValue(param0);
+			func.PCall();
+			func.EndPCall();
+		}
+	}
+
+	public System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>> System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance(LuaFunction func, LuaTable self, bool flag)
+	{
+		if (func == null)
+		{
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>> fn = delegate(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance> param0) { };
+			return fn;
+		}
+
+		if(!flag)
+		{
+			System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event target = new System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event(func);
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>> d = target.Call;
+			target.method = d.Method;
+			return d;
+		}
+		else
+		{
+			System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event target = new System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance_Event(func, self);
+			System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>> d = target.CallWithSelf;
+			target.method = d.Method;
+			return d;
+		}
+	}
+
+	bool Check_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance(IntPtr L, int pos)
+	{
+		return TypeChecker.CheckDelegateType(typeof(System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>>), L, pos);
+	}
+
+	void Push_System_Action_UnityEngine_ResourceManagement_AsyncOperations_AsyncOperationHandle_UnityEngine_ResourceManagement_ResourceProviders_SceneInstance(IntPtr L, System.Action<UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance>> o)
 	{
 		ToLua.Push(L, o);
 	}
