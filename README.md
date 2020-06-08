@@ -54,7 +54,27 @@ Build版本toLua报错？
     - **Tools->Check for Content Update Restrications**
     - **Build->Update a Previous Build**
 
-- 太麻烦，想要一键增量更新？ 看这里，看这里。首先 **Tools->Check for Content Update**，然后 **Tools->Build->Content Update**，搞定！
+- 太麻烦，想要一键增量更新？ 看这里，看这里。首先 **Tools->Check for Content Update** （之所以分两步是因为你可以在分完组之后，对新生成的组进行配置上的调整），然后 **Tools->Build->Content Update**，搞定！
+
+- 增量更新的结果与文档所说的不一致？
+  
+  Local Group 和 Static Remote Group 在 **增量更新** 之后 **依旧会生成新的包** 而不是文档所说的 **不会更改**。
+
+  其实不难理解官方怎么做的用意，因为不再更新 Local Group 或 Static Remote Group，那么已经被移除的内容将会成为 **dead data** 一直存在于包中。
+
+  而如果是一些新用户，之前没有下载过这些包，那么他也将不得不下载（只要你需要用到这个包中的部分资源）这些 **dead data** 。
+
+  然而到目前为止（Addressables 1.9.2），增量更新生成的新 **catalog.json** 并不会添加一个指向旧包的索引，所以会导致加载旧包内的资源失败。
+
+  已经有人发布了相关的问题 **[static group bundle name has changed in catalog when build for content update](https://forum.unity.com/threads/static-group-bundle-name-has-changed-in-catalog-when-build-for-content-update.703394/)**，可以等待官方的修复版本 或 使用官方提供的 **hack** 方案。
+
+  hack 方案：
+  
+    选中 Group **Content Packing & Loading -> Advanced Options -> Bundle Naming** 选择 **Filename**。 这样就真的如文档所说的那样 **不会更改** 了。
+
+    **还有一点需要注意，虽然这样做之后是不会生成新的包了，但是你可能依然无法加载旧包内的资源，因为在增量更新之后 Crc 检测会失败！**
+
+    我的解决办法是，禁用 Group **Content Packing & Loading -> Advanced Options -> Use Asset Bundle Crc** 选项。
 
 - 怎么发布到服务器？
   - 下载 [XAMPP](https://www.apachefriends.org/download.html) Apache Http Server

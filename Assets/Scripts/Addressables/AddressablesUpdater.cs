@@ -161,10 +161,10 @@ public class AddressablesUpdater : MonoBehaviour
     private IEnumerator UpdateResourceLocatorsAsync()
     {
         Addressables.ClearResourceLocators();
-
+        string[] catalogs = null;
         if (Directory.Exists(addressablesDir))
         {
-            string[] catalogs = GetCatalogs(addressablesDir, "json", SearchOption.TopDirectoryOnly);
+            catalogs = GetCatalogs(addressablesDir, "json", SearchOption.TopDirectoryOnly);
             for (int i = 0; i < catalogs.Length; i++)
             {
                 var catalogHandle = Addressables.LoadContentCatalogAsync(catalogs[i]);
@@ -173,9 +173,9 @@ public class AddressablesUpdater : MonoBehaviour
                 Addressables.Release(catalogHandle);
             }
         }
-        else
+        if (catalogs == null || catalogs.Length == 0)
         {
-            string[] catalogs = GetCatalogs(Addressables.RuntimePath, "json", SearchOption.TopDirectoryOnly);
+            catalogs = GetCatalogs(Addressables.RuntimePath, "json", SearchOption.TopDirectoryOnly);
             for (int i = 0; i < catalogs.Length; i++)
             {
                 var catalogHandle = Addressables.LoadContentCatalogAsync(catalogs[i]);
@@ -199,16 +199,18 @@ public class AddressablesUpdater : MonoBehaviour
 
     private void LoadOriginalCatalogs()
     {
-        if (!Directory.Exists(addressablesDir) || !Directory.Exists(originalDir)) { return; }
-        var catalogs = GetCatalogs(addressablesDir, SearchOption.TopDirectoryOnly);
-        for (int i = 0; i < catalogs.Length; i++)
+        if (Directory.Exists(addressablesDir))
         {
-            File.Delete(catalogs[i]);
-        }
-        catalogs = GetCatalogs(originalDir, SearchOption.TopDirectoryOnly);
-        for (int i = 0; i < catalogs.Length; i++)
-        {
-            File.Move(catalogs[i], catalogs[i].Replace(originalFolder, addressablesFolder));
+            string[] catalogs = GetCatalogs(addressablesDir, SearchOption.TopDirectoryOnly);
+            for (int i = 0; i < catalogs.Length; i++)
+            {
+                File.Delete(catalogs[i]);
+            }
+            catalogs = GetCatalogs(originalDir, SearchOption.TopDirectoryOnly);
+            for (int i = 0; i < catalogs.Length; i++)
+            {
+                File.Move(catalogs[i], catalogs[i].Replace(originalFolder, addressablesFolder));
+            }
         }
         DeleteOriginalCatalogs();
     }
