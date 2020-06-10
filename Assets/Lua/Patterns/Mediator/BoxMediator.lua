@@ -81,6 +81,8 @@ function BoxMediator:Update()
     end
 end
 
+local colorID = Shader.PropertyToID("_Color")
+
 function BoxMediator:UpdateBox()
     --盒子随机位置、大小、颜色
     local randomScale = Random.Range(0.5, 1)
@@ -100,7 +102,7 @@ function BoxMediator:UpdateBox()
     end
     self.boxProxy.boxDataMap[box].scale = box.transform.localScale
     self.boxProxy.boxDataMap[box].color = Color(Random.Range(0.0, 1.0), Random.Range(0.0, 1.0), Random.Range(0.0, 1.0))
-    propertyBlock:SetColor("_BaseColor", self.boxProxy.boxDataMap[box].color)
+    propertyBlock:SetColor(colorID, self.boxProxy.boxDataMap[box].color)
     renderer:SetPropertyBlock(propertyBlock)
     box:SetActive(true)
 end

@@ -20,6 +20,7 @@ function Main()
     Camera = UnityEngine.Camera
     MaterialPropertyBlock = UnityEngine.MaterialPropertyBlock
     SceneManager = UnityEngine.SceneManagement.SceneManager
+    Shader = UnityEngine.Shader
 
     LuaFacade.RegisterCommand("Patterns.Command.StartUpCommand", "StartUp")
 
