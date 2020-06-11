@@ -11,6 +11,6 @@ public class EasyPipelineAsset : RenderPipelineAsset
     protected override RenderPipeline CreatePipeline()
     {
         // 创建自定义渲染管线并返回。
-        return new EasyPipeline() { UseDynamicBatching = useDynamicBatching, UseSRPBatching = useSRPBatching, UseInstancing = useInstancing };
+        return new EasyPipeline(useSRPBatching) { UseDynamicBatching = useDynamicBatching, UseInstancing = useInstancing };
     }
 }
