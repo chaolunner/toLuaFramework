@@ -26,10 +26,33 @@
 			#pragma instancing_options assumeuniformscaling 
 			#pragma instancing_options lodfade
 
+			#pragma multi_compile _ _SHADOWS_HARD
+			#pragma multi_compile _ _SHADOWS_SOFT
+
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
 
 			#include "Lit.hlsl"
+
+			ENDHLSL
+		}
+
+		Pass 
+		{
+			Tags { "LightMode" = "ShadowCaster" }
+
+			HLSLPROGRAM
+
+			#pragma target 3.5
+
+			#pragma multi_compile_instancing
+			#pragma instancing_options assumeuniformscaling
+			#pragma instancing_options lodfade
+
+			#pragma vertex ShadowCasterPassVertex
+			#pragma fragment ShadowCasterPassFragment
+
+			#include "ShadowCaster.hlsl"
 
 			ENDHLSL
 		}

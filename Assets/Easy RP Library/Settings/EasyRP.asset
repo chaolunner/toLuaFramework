@@ -15,3 +15,4 @@ MonoBehaviour:
   useDynamicBatching: 1
   useSRPBatching: 0
   useInstancing: 1
+  shadowMapSize: 1024
