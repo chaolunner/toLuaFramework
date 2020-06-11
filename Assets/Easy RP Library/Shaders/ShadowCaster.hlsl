@@ -11,6 +11,9 @@ CBUFFER_START(UnityPerDraw)
 	float4x4 unity_WorldToObject; 
 	float4 unity_LODFade;
 	real4 unity_WorldTransformParams;
+	// 未使用，但SRP Batcher需要确保各个Pass之间UnityPerDraw buffer保持不变。
+	float4 unity_LightData; 
+	real4 unity_LightIndices[2];
 CBUFFER_END
 CBUFFER_START(_ShadowCasterBuffer)
 	float _ShadowBias;
