@@ -27,13 +27,18 @@ CBUFFER_END
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
 CBUFFER_START(UnityPerMaterial) // UnityPerMaterial缓冲区仅在切换材质时改变。
-	//float4 _Color;
 	sampler2D _MainTex;
 	float4 _MainTex_ST;
+	float4 _Color;
 CBUFFER_END
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial) // 当用Instancing时，将color属性存入Constant Buffer，使一个material渲染多种颜色，并且可以合并draw call。
+// 注意，UNITY_INSTANCING_ENABLED 宏必须要加，因为 SRP Batch 需要将所有属性都加入到 UnityPerMaterial buffer 中，
+// 而 Instancing 又需要将 _Color 属性加入到 PreInstance buffer 中，两者存在冲突，同时开启会出错，
+// 但 UNITY_INSTANCING_ENABLED 可以在 SRP Batch 运行时，返回 false，这样我们就可以跳过下面的步骤了。
+#if defined(UNITY_INSTANCING_ENABLED)	
+UNITY_INSTANCING_BUFFER_START(PreInstance) // 当用Instancing时，将color属性存入Constant Buffer，使一个material渲染多种颜色，并且可以合并draw call。
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_BUFFER_END(PreInstance)
+#endif
 
 struct VertexInput
 {
@@ -64,12 +69,14 @@ VertexOutput UnlitPassVertex(VertexInput input)
 
 float4 UnlitPassFragment(VertexOutput input) : SV_Target
 {
-	//float3 col = tex2D(_MainTex, input.uv).rgb;
-	//return float4(col * _Color, 1);
+	//float3 tex = tex2D(_MainTex, input.uv).rgb;
+	//float3 color = _Color * tex;
+	//return float4(color, 1);
 	UNITY_SETUP_INSTANCE_ID(input);
-	float4 _color = UNITY_ACCESS_INSTANCED_PROP(PreInstance, _Color); // 根据index取用color。
-	float3 col = tex2D(_MainTex, input.uv).rgb;
-	return float4(col * _color, 1);
+	float4 col = UNITY_ACCESS_INSTANCED_PROP(PreInstance, _Color); // 根据index取用color。
+	float3 tex = tex2D(_MainTex, input.uv).rgb;
+	float3 color = col * tex;
+	return float4(color, 1);
 }
 
 #endif // EASYRP_UNLIT_INCLUDED

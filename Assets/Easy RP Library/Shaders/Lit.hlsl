@@ -114,10 +114,13 @@ float ShadowAttenuation(int index, float3 worldPos)
 CBUFFER_START(UnityPerMaterial)
 	sampler2D _MainTex;
 	float4 _MainTex_ST;
+	float4 _Color;
 CBUFFER_END
+#if defined(UNITY_INSTANCING_ENABLED)
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_BUFFER_END(PreInstance)
+#endif
 
 struct VertexInput
 {
@@ -161,8 +164,8 @@ VertexOutput LitPassVertex(VertexInput input)
 float4 LitPassFragment(VertexOutput input) : SV_Target
 {
 	UNITY_SETUP_INSTANCE_ID(input);
-	float3 albedo = UNITY_ACCESS_INSTANCED_PROP(PreInstance, _Color).rgb;
-	float3 col = tex2D(_MainTex, input.uv).rgb;
+	float3 col = UNITY_ACCESS_INSTANCED_PROP(PreInstance, _Color).rgb;
+	float3 tex = tex2D(_MainTex, input.uv).rgb;
 	input.normal = normalize(input.normal); // 坐标变换后在fragment函数中进行归一化。
 	float3 diffuseLight = input.vertexLighting;
 	for (int i = 0; i < min(unity_LightData.y, 4); i++) { // unity_LightIndices[0] 只能存储4个值。
@@ -170,7 +173,7 @@ float4 LitPassFragment(VertexOutput input) : SV_Target
 		float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
 		diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos, shadowAttenuation);
 	}
-	float3 color = diffuseLight * albedo * col;
+	float3 color = diffuseLight * col * tex;
 	return float4(color, 1);
 }
 

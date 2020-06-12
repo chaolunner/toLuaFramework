@@ -93,7 +93,6 @@ public class EasyPipeline : RenderPipeline
                 cameraBuffer.DisableShaderKeyword(shadowsHardKeyword);
                 cameraBuffer.DisableShaderKeyword(shadowsSoftKeyword);
             }
-            //ConfigureLights();
             Setup(context, cameras[i]);
             DrawVisibleGeometry(context, cameras[i]);
             DrawUnsupportedShaders(context, cameras[i]);
