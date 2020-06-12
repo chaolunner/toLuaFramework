@@ -50,44 +50,69 @@ float3 DiffuseLight(int index, float3 normal, float3 worldPos, float shadowAtten
 // 阴影缓冲区
 CBUFFER_START(_ShadowBuffer)
 	float4x4 _WorldToShadowMatrices[MAX_VISIBLE_LIGHTS];
+	float4x4 _WorldToShadowCascadeMatrices[4];
+	float4 _CascadeCullingSpheres[4];
 	float4 _ShadowData[MAX_VISIBLE_LIGHTS];
 	float4 _ShadowMapSize;
+	float4 _CascadedShadowMapSize;
+	float4 _GlobalShadowData;
+	float _CascadedShadowStrength;
 CBUFFER_END
 
 TEXTURE2D_SHADOW(_ShadowMap); // 定义阴影纹理
 SAMPLER_CMP(sampler_ShadowMap); // 定义阴影采样器状态
 
+TEXTURE2D_SHADOW(_CascadedShadowMap); // 定义主光源级联阴影纹理
+SAMPLER_CMP(sampler_CascadedShadowMap); // 定义主光源级联阴影采样器状态
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl" // 软阴影采样（SampleShadow_ComputeSamples_Tent_5x5）需要。
 
-float HardShadowAttenuation(float4 shadowPos) 
+float HardShadowAttenuation(float4 shadowPos, bool cascade = false)
 {
-	return SAMPLE_TEXTURE2D_SHADOW(_ShadowMap, sampler_ShadowMap, shadowPos.xyz);
+	// 通过 SAMPLE_TEXTURE2D_SHADOW 这个宏采样阴影贴图。它需要一张贴图，一个采样器状态，以及对应的阴影空间位置作为参数。
+	// 如果该点位置的z值比在阴影贴图中对应点的值要小就会返回1，这说明他比任何投射阴影的物体离光源都要近。
+	// 反之，在阴影投射物后面就会返回0。因为采样器会在双线性插值之前先进行比较，所以阴影边缘会混合阴影贴图的多个纹素（texels）。
+	if (cascade) {
+		return SAMPLE_TEXTURE2D_SHADOW(_CascadedShadowMap, sampler_CascadedShadowMap, shadowPos.xyz);
+	} else {
+		return SAMPLE_TEXTURE2D_SHADOW(_ShadowMap, sampler_ShadowMap, shadowPos.xyz);
+	}
 }
 
-float SoftShadowAttenuation(float4 shadowPos)
+float SoftShadowAttenuation(float4 shadowPos, bool cascade = false)
 {
 	real tentWeights[9]; // real不是一个实际的数字类型，而是一个宏，根据需要自动选择float或者half。
 	real2 tentUVs[9];
-	SampleShadow_ComputeSamples_Tent_5x5(_ShadowMapSize, shadowPos.xy, tentWeights, tentUVs);
+	float4 size = cascade ? _CascadedShadowMapSize : _ShadowMapSize;
+	SampleShadow_ComputeSamples_Tent_5x5(size, shadowPos.xy, tentWeights, tentUVs);
 	float attenuation = 0;
-	for (int i = 0; i < 9; i++)
-	{
-		attenuation += tentWeights[i] * SAMPLE_TEXTURE2D_SHADOW(_ShadowMap, sampler_ShadowMap, float3(tentUVs[i].xy, shadowPos.z));
+	for (int i = 0; i < 9; i++) {
+		attenuation += tentWeights[i] * HardShadowAttenuation(float4(tentUVs[i].xy, shadowPos.z, 0), cascade);
 	}
 	return attenuation;
 }
 
+CBUFFER_START(UnityPerCamera) // UnityPerCamera 缓冲区会提供相机位置信息。
+	float3 _WorldSpaceCameraPos;
+CBUFFER_END
+
+float DistanceToCameraSqr(float3 worldPos) 
+{
+	float3 cameraToFragment = worldPos - _WorldSpaceCameraPos;
+	return dot(cameraToFragment, cameraToFragment);
+}
+
 float ShadowAttenuation(int index, float3 worldPos)
 {
-	if (_ShadowData[index].x <= 0) {
+	if (_ShadowData[index].x <= 0 || DistanceToCameraSqr(worldPos) > _GlobalShadowData.y) {
 		return 1.0;
 	}
 	float4 shadowPos = mul(_WorldToShadowMatrices[index], float4(worldPos, 1.0));
 	// 从齐次坐标转换到常规坐标。
 	shadowPos.xyz /= shadowPos.w;
-	// 通过 SAMPLE_TEXTURE2D_SHADOW 这个宏采样阴影贴图。它需要一张贴图，一个采样器状态，以及对应的阴影空间位置作为参数。
-	// 如果该点位置的z值比在阴影贴图中对应点的值要小就会返回1，这说明他比任何投射阴影的物体离光源都要近。
-	// 反之，在阴影投射物后面就会返回0。因为采样器会在双线性插值之前先进行比较，所以阴影边缘会混合阴影贴图的多个纹素（texels）。
+	// 在透视除法后对阴影位置的xy坐标做限制，将其限制在0-1范围内，确保阴影采样坐标在tile内。
+	shadowPos.xy = saturate(shadowPos.xy);
+	shadowPos.xy = shadowPos.xy * _GlobalShadowData.x + _ShadowData[index].zw;
 	float attenuation;
 #if defined(_SHADOWS_HARD)
 	#if defined(_SHADOWS_SOFT)
@@ -106,6 +131,57 @@ float ShadowAttenuation(int index, float3 worldPos)
 #endif
 
 	return lerp(1, attenuation, _ShadowData[index].x);
+}
+
+// 判断一个点是否在剔除球体内。
+float InsideCascadeCullingSphere(int index, float3 worldPos) 
+{
+	float4 s = _CascadeCullingSpheres[index];
+	return dot(worldPos - s.xyz, worldPos - s.xyz) < s.w;
+}
+
+float CascadedShadowAttenuation(float3 worldPos) 
+{
+#if !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
+	return 1.0;
+#endif
+	// 因为剔除球不会与相机和阴影距离对齐，所以级联阴影不会和其他阴影一样在同一距离消失。
+	// 我们也一样可以在 CascadedShadowAttenuation 中检查阴影距离来实现统一的效果。
+	if (DistanceToCameraSqr(worldPos) > _GlobalShadowData.y) {
+		return 1.0;
+	}
+	// 一点位于一个球的同时，还在更大的球里面。
+	// 我们最终可能得到五种情况： (1,1,1,1)，(0,1,1,1)，(0,0,1,1)，(0,0,0,1)，(0,0,0,0)。
+	float4 cascadeFlags = float4(
+		InsideCascadeCullingSphere(0, worldPos),
+		InsideCascadeCullingSphere(1, worldPos),
+		InsideCascadeCullingSphere(2, worldPos),
+		InsideCascadeCullingSphere(3, worldPos)
+	);
+	//return dot(cascadeFlags, 0.25); // 可以用来观察级联层次。
+	cascadeFlags.yzw = saturate(cascadeFlags.yzw - cascadeFlags.xyz);
+	float cascadeIndex = 4 - dot(cascadeFlags, float4(4, 3, 2, 1));
+	if (cascadeIndex == 4) { // 在所有级联阴影贴图之外，直接忽略。
+		return 1.0; 
+	}
+	float4 shadowPos = mul(_WorldToShadowCascadeMatrices[cascadeIndex], float4(worldPos, 1.0));
+	float attenuation;
+#if defined(_CASCADED_SHADOWS_HARD)
+	attenuation = HardShadowAttenuation(shadowPos, true);
+#else
+	attenuation = SoftShadowAttenuation(shadowPos, true);
+#endif
+	return lerp(1, attenuation, _CascadedShadowStrength);
+}
+
+float3 MainLight(float3 normal, float3 worldPos) 
+{
+	float shadowAttenuation = CascadedShadowAttenuation(worldPos);
+	float3 lightColor = _VisibleLightColors[0].rgb;
+	float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
+	float diffuse = saturate(dot(normal, lightDirection));
+	diffuse *= shadowAttenuation;
+	return diffuse * lightColor;
 }
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
@@ -168,6 +244,9 @@ float4 LitPassFragment(VertexOutput input) : SV_Target
 	float3 tex = tex2D(_MainTex, input.uv).rgb;
 	input.normal = normalize(input.normal); // 坐标变换后在fragment函数中进行归一化。
 	float3 diffuseLight = input.vertexLighting;
+#if defined(_CASCADED_SHADOWS_HARD) || defined(_CASCADED_SHADOWS_SOFT)
+	diffuseLight += MainLight(input.normal, input.worldPos);
+#endif
 	for (int i = 0; i < min(unity_LightData.y, 4); i++) { // unity_LightIndices[0] 只能存储4个值。
 		int lightIndex = unity_LightIndices[0][i];
 		float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
