@@ -27,18 +27,20 @@ CBUFFER_END
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
 CBUFFER_START(UnityPerMaterial) // UnityPerMaterial缓冲区仅在切换材质时改变。
-	sampler2D _MainTex;
 	float4 _MainTex_ST;
 	float4 _Color;
 CBUFFER_END
 // 注意，UNITY_INSTANCING_ENABLED 宏必须要加，因为 SRP Batch 需要将所有属性都加入到 UnityPerMaterial buffer 中，
-// 而 Instancing 又需要将 _Color 属性加入到 PreInstance buffer 中，两者存在冲突，同时开启会出错，
+// 而 Instancing 又需要将 _Color 属性加入到 PerInstance buffer 中，两者存在冲突，同时开启会出错，
 // 但 UNITY_INSTANCING_ENABLED 可以在 SRP Batch 运行时，返回 false，这样我们就可以跳过下面的步骤了。
 #if defined(UNITY_INSTANCING_ENABLED)	
-UNITY_INSTANCING_BUFFER_START(PreInstance) // 当用Instancing时，将color属性存入Constant Buffer，使一个material渲染多种颜色，并且可以合并draw call。
+UNITY_INSTANCING_BUFFER_START(PerInstance) // 当用Instancing时，将color属性存入Constant Buffer，使一个material渲染多种颜色，并且可以合并draw call。
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-UNITY_INSTANCING_BUFFER_END(PreInstance)
+UNITY_INSTANCING_BUFFER_END(PerInstance)
 #endif
+
+TEXTURE2D(_MainTex);
+SAMPLER(sampler_MainTex);
 
 struct VertexInput
 {
@@ -63,20 +65,22 @@ VertexOutput UnlitPassVertex(VertexInput input)
 	UNITY_TRANSFER_INSTANCE_ID(input, output); // 因为需要在UnlitPassFragment方法中调用color属性，所以需要将index从input复制到output（同时需要在 VertexOutput 结构体中添加 UNITY_VERTEX_INPUT_INSTANCE_ID），为此可以使用 UNITY_TRANSFER_INSTANCE_ID 宏。
 	float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
 	output.clipPos = mul(unity_MatrixVP, worldPos);
-	output.uv = _MainTex_ST.xy * input.uv + _MainTex_ST.zw;
+	// 若要应用纹理（texture）的平铺（tiling）和偏移（offset），需要在 UnityPerMaterial buffer 中添加 _MainTex_ST 变量（variable），
+	// 然后使用以下两种方式的其中一种就行。
+	//output.uv = _MainTex_ST.xy * input.uv + _MainTex_ST.zw;
+	output.uv = TRANSFORM_TEX(input.uv, _MainTex);
 	return output;
 }
 
-float4 UnlitPassFragment(VertexOutput input) : SV_Target
+float4 UnlitPassFragment(VertexOutput input) : SV_TARGET
 {
-	//float3 tex = tex2D(_MainTex, input.uv).rgb;
-	//float3 color = _Color * tex;
-	//return float4(color, 1);
+	//float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+	//albedoAlpha *= _Color;
+	//return float4(albedoAlpha.rgb, 1);
 	UNITY_SETUP_INSTANCE_ID(input);
-	float4 col = UNITY_ACCESS_INSTANCED_PROP(PreInstance, _Color); // 根据index取用color。
-	float3 tex = tex2D(_MainTex, input.uv).rgb;
-	float3 color = col * tex;
-	return float4(color, 1);
+	float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+	albedoAlpha *= UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color); // 根据index取用color。
+	return float4(albedoAlpha.rgb, 1);
 }
 
 #endif // EASYRP_UNLIT_INCLUDED

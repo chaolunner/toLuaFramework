@@ -104,6 +104,11 @@ float DistanceToCameraSqr(float3 worldPos)
 
 float ShadowAttenuation(int index, float3 worldPos)
 {
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#elif !defined(_SHADOWS_HARD) && !defined(_SHADOWS_SOFT)
+	return 1.0;
+#endif
 	if (_ShadowData[index].x <= 0 || DistanceToCameraSqr(worldPos) > _GlobalShadowData.y) {
 		return 1.0;
 	}
@@ -142,7 +147,9 @@ float InsideCascadeCullingSphere(int index, float3 worldPos)
 
 float CascadedShadowAttenuation(float3 worldPos) 
 {
-#if !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#elif !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
 	return 1.0;
 #endif
 	// 因为剔除球不会与相机和阴影距离对齐，所以级联阴影不会和其他阴影一样在同一距离消失。
@@ -188,31 +195,34 @@ float3 MainLight(float3 normal, float3 worldPos)
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
 CBUFFER_START(UnityPerMaterial)
-	sampler2D _MainTex;
 	float4 _MainTex_ST;
 	float4 _Color;
+	float _Cutoff;
 CBUFFER_END
 #if defined(UNITY_INSTANCING_ENABLED)
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-UNITY_INSTANCING_BUFFER_END(PreInstance)
+UNITY_INSTANCING_BUFFER_END(PerInstance)
 #endif
+
+TEXTURE2D(_MainTex);
+SAMPLER(sampler_MainTex);
 
 struct VertexInput
 {
 	float4 pos				: POSITION;
-	float2 uv				: TEXCOORD0;
 	float3 normal			: NORMAL;
+	float2 uv				: TEXCOORD0;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct VertexOutput
 {
 	float4 clipPos			: SV_POSITION;
-	float2 uv				: TEXCOORD0;
-	float3 normal			: TEXCOORD1;
-	float3 worldPos			: TEXCOORD2;
-	float3 vertexLighting	: TEXCOORD3;
+	float3 normal			: TEXCOORD0;
+	float3 worldPos			: TEXCOORD1;
+	float3 vertexLighting	: TEXCOORD2;
+	float2 uv				: TEXCOORD3;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -223,9 +233,9 @@ VertexOutput LitPassVertex(VertexInput input)
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
 	float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
 	output.clipPos = mul(unity_MatrixVP, worldPos);
-	output.uv = _MainTex_ST.xy * input.uv + _MainTex_ST.zw;
-	output.normal = mul(unity_ObjectToWorld, float4(input.normal, 0));
-	//output.normal = mul((float3x3)unity_ObjectToWorld, input.normal); // 如果物体使用统一的scale，可以考虑使用 3X3 模型矩阵简化法线的坐标变换。
+	output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+	output.normal = mul(transpose((float3x3)unity_WorldToObject), input.normal);
+	//output.normal = mul((float3x3)UNITY_MATRIX_M, input.normal); // 如果物体使用统一的scale，可以考虑使用 3X3 模型矩阵简化法线的坐标变换。
 	output.worldPos = worldPos.xyz;
 	// 由于后四个光源其实并没有那么重要，我们可以将其计算从fragment函数中移到vertex函数中，也就是从逐像素光照改为逐顶点光照，
 	// 这样虽然着色的精度会损失一些，但是可以减少GPU的消耗。
@@ -237,12 +247,13 @@ VertexOutput LitPassVertex(VertexInput input)
 	return output;
 }
 
-float4 LitPassFragment(VertexOutput input) : SV_Target
+float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
-	float3 col = UNITY_ACCESS_INSTANCED_PROP(PreInstance, _Color).rgb;
-	float3 tex = tex2D(_MainTex, input.uv).rgb;
+	float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+	albedoAlpha *= UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color);
 	input.normal = normalize(input.normal); // 坐标变换后在fragment函数中进行归一化。
+	input.normal = IS_FRONT_VFACE(isFrontFace, input.normal, -input.normal); // 修正只渲染背面时，法线相反的问题。
 	float3 diffuseLight = input.vertexLighting;
 #if defined(_CASCADED_SHADOWS_HARD) || defined(_CASCADED_SHADOWS_SOFT)
 	diffuseLight += MainLight(input.normal, input.worldPos);
@@ -252,8 +263,13 @@ float4 LitPassFragment(VertexOutput input) : SV_Target
 		float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
 		diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos, shadowAttenuation);
 	}
-	float3 color = diffuseLight * col * tex;
-	return float4(color, 1);
+	float3 color = diffuseLight * albedoAlpha.rgb;
+
+#if defined(_CLIPPING_ON)
+	clip(albedoAlpha.a - _Cutoff); // alpha值小于阈值的片段将被丢弃，不会被渲染。
+#endif
+
+	return float4(color, albedoAlpha.a);
 }
 
 #endif // EASYRP_LIT_INCLUDED

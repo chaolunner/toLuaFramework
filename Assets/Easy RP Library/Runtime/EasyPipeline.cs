@@ -122,7 +122,7 @@ namespace UniEasy.Rendering
                     cameraBuffer.DisableShaderKeyword(cascadedShadowsSoftKeyword);
                 }
                 Setup(context, cameras[i]);
-                DrawVisibleGeometry(context, cameras[i]);
+                Draws(context, cameras[i]);
                 DrawUnsupportedShaders(context, cameras[i]);
 #if UNITY_EDITOR
                 DrawGizmos(context, cameras[i]);
@@ -488,7 +488,7 @@ namespace UniEasy.Rendering
             cameraBuffer.Clear();
         }
 
-        private void DrawVisibleGeometry(ScriptableRenderContext context, Camera camera)
+        private void Draws(ScriptableRenderContext context, Camera camera)
         {
             // 渲染，牵扯到渲染排序，所以先要进行一个相机的排序设置，这里Unity内置了一些默认的排序可以调用。
             SortingSettings sortSet = new SortingSettings(camera) { criteria = SortingCriteria.CommonOpaque };

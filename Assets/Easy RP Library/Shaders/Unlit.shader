@@ -2,8 +2,8 @@
 {
 	Properties
 	{
-		_MainTex("Main Tex", 2D) = "white" {}
-		_Color("Color Tint", Color) = (1,1,1,1)
+		_Color("Color", Color) = (1,1,1,1)
+		_MainTex("Albedo & Alpha", 2D) = "white" {}
 	}
 
 	SubShader
