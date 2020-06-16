@@ -58,7 +58,7 @@ struct VertexOutput
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VertexOutput UnlitPassVertex(VertexInput input)
+VertexOutput UnlitPassVertex (VertexInput input)
 {
 	VertexOutput output;
 	UNITY_SETUP_INSTANCE_ID(input); // 最后，我们必须在UnlitPassVertex方法使用UNITY_MATRIX_M之前，调用 UNITY_SETUP_INSTANCE_ID 宏，使index可用。
@@ -72,7 +72,7 @@ VertexOutput UnlitPassVertex(VertexInput input)
 	return output;
 }
 
-float4 UnlitPassFragment(VertexOutput input) : SV_TARGET
+float4 UnlitPassFragment (VertexOutput input) : SV_TARGET
 {
 	//float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 	//albedoAlpha *= _Color;

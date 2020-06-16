@@ -2,6 +2,9 @@
 #define EASYRP_LIT_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl" // PerceptualRoughnessToMipmapLevel 被定义在 ImageBasedLighting.hlsl 文件中。
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl" // 使反射探针支持HDR编码或探测器的强度发生变化，这依赖于 DecodeHDREnvironment 方法。
+#include "Lighting.hlsl"
 
 CBUFFER_START(UnityPerFrame)
 	float4x4 unity_MatrixVP;
@@ -13,6 +16,10 @@ CBUFFER_START(UnityPerDraw)
 	real4 unity_WorldTransformParams;
 	float4 unity_LightData; // Y分量存有当前物体受多少光源影响的数量。
 	real4 unity_LightIndices[2];
+	float4 unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax; // 反射探针的 BoxProjection（盒子投影）。
+	float4 unity_SpecCube0_ProbePosition, unity_SpecCube0_HDR;
+	float4 unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax; // 混合探针。
+	float4 unity_SpecCube1_ProbePosition, unity_SpecCube1_HDR;
 CBUFFER_END
 // 光源缓冲区
 #define MAX_VISIBLE_LIGHTS 16
@@ -23,15 +30,16 @@ CBUFFER_START(_LightBuffer)
 	float4 _VisibleLightSpotDirections[MAX_VISIBLE_LIGHTS];
 CBUFFER_END
 
-float3 DiffuseLight(int index, float3 normal, float3 worldPos, float shadowAttenuation) {
+float3 GenericLight (int index, LitSurface s, float shadowAttenuation)
+{
 	float3 lightColor = _VisibleLightColors[index].rgb;
 	float4 lightPositionOrDirection = _VisibleLightDirectionsOrPositions[index];
 	float4 lightAttenuation = _VisibleLightAttenuations[index];
-	// 当是方向光时，w是0，当是点光源时，w是1，我们利用该性质将 worldPos 与 w 分量相乘，这样就可以用同一个公式计算点光源和方向光的信息。
-	float3 lightVector = lightPositionOrDirection.xyz - worldPos * lightPositionOrDirection.w;
+	// 当是方向光时，w是0，当是点光源时，w是1，我们利用该性质将 s.position 与 w 分量相乘，这样就可以用同一个公式计算点光源和方向光的信息。
+	float3 lightVector = lightPositionOrDirection.xyz - s.position * lightPositionOrDirection.w;
 	float3 lightDirection = normalize(lightVector);
 	float3 spotDirection = _VisibleLightSpotDirections[index].xyz;
-	float diffuse = saturate(dot(normal, lightDirection));
+	float3 color = LightSurface(s, lightDirection);
 	// 和方向光不同，点光源要考虑光源强度随着距离而衰减。这里的衰减关系是距离平方的倒数。为了避免除数是0出现错误，因此加入一个极小的值0.00001。
 	float distanceSqr = max(dot(lightVector, lightVector), 0.00001);
 	// 点光源还需要考虑光照范围。
@@ -43,8 +51,8 @@ float3 DiffuseLight(int index, float3 normal, float3 worldPos, float shadowAtten
 	spotFade = saturate(spotFade * lightAttenuation.z + lightAttenuation.w);
 	spotFade *= spotFade;
 
-	diffuse *= shadowAttenuation * spotFade * rangeFade / distanceSqr;
-	return diffuse * lightColor;
+	color *= shadowAttenuation * spotFade * rangeFade / distanceSqr;
+	return color * lightColor;
 }
 
 // 阴影缓冲区
@@ -67,7 +75,7 @@ SAMPLER_CMP(sampler_CascadedShadowMap); // 定义主光源级联阴影采样器�
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl" // 软阴影采样（SampleShadow_ComputeSamples_Tent_5x5）需要。
 
-float HardShadowAttenuation(float4 shadowPos, bool cascade = false)
+float HardShadowAttenuation (float4 shadowPos, bool cascade = false)
 {
 	// 通过 SAMPLE_TEXTURE2D_SHADOW 这个宏采样阴影贴图。它需要一张贴图，一个采样器状态，以及对应的阴影空间位置作为参数。
 	// 如果该点位置的z值比在阴影贴图中对应点的值要小就会返回1，这说明他比任何投射阴影的物体离光源都要近。
@@ -79,7 +87,7 @@ float HardShadowAttenuation(float4 shadowPos, bool cascade = false)
 	}
 }
 
-float SoftShadowAttenuation(float4 shadowPos, bool cascade = false)
+float SoftShadowAttenuation (float4 shadowPos, bool cascade = false)
 {
 	real tentWeights[9]; // real不是一个实际的数字类型，而是一个宏，根据需要自动选择float或者half。
 	real2 tentUVs[9];
@@ -96,13 +104,13 @@ CBUFFER_START(UnityPerCamera) // UnityPerCamera 缓冲区会提供相机位置�
 	float3 _WorldSpaceCameraPos;
 CBUFFER_END
 
-float DistanceToCameraSqr(float3 worldPos) 
+float DistanceToCameraSqr (float3 worldPos) 
 {
 	float3 cameraToFragment = worldPos - _WorldSpaceCameraPos;
 	return dot(cameraToFragment, cameraToFragment);
 }
 
-float ShadowAttenuation(int index, float3 worldPos)
+float ShadowAttenuation (int index, float3 worldPos)
 {
 #if !defined(_RECEIVE_SHADOWS)
 	return 1.0;
@@ -139,13 +147,13 @@ float ShadowAttenuation(int index, float3 worldPos)
 }
 
 // 判断一个点是否在剔除球体内。
-float InsideCascadeCullingSphere(int index, float3 worldPos) 
+float InsideCascadeCullingSphere (int index, float3 worldPos) 
 {
 	float4 s = _CascadeCullingSpheres[index];
 	return dot(worldPos - s.xyz, worldPos - s.xyz) < s.w;
 }
 
-float CascadedShadowAttenuation(float3 worldPos) 
+float CascadedShadowAttenuation (float3 worldPos) 
 {
 #if !defined(_RECEIVE_SHADOWS)
 	return 1.0;
@@ -181,32 +189,70 @@ float CascadedShadowAttenuation(float3 worldPos)
 	return lerp(1, attenuation, _CascadedShadowStrength);
 }
 
-float3 MainLight(float3 normal, float3 worldPos) 
+float3 MainLight (LitSurface s) // LitSurface 来自 Light.hlsl 文件。
 {
-	float shadowAttenuation = CascadedShadowAttenuation(worldPos);
+	float shadowAttenuation = CascadedShadowAttenuation(s.position); // s.position == 世界位置。
 	float3 lightColor = _VisibleLightColors[0].rgb;
 	float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
-	float diffuse = saturate(dot(normal, lightDirection));
-	diffuse *= shadowAttenuation;
-	return diffuse * lightColor;
+	float3 color = LightSurface(s, lightDirection); // 计算漫反射。
+	color *= shadowAttenuation;
+	return color * lightColor;
 }
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
+#define UNITY_MATRIX_I_M unity_WorldToObject
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
 CBUFFER_START(UnityPerMaterial)
 	float4 _MainTex_ST;
 	float4 _Color;
 	float _Cutoff;
+	float _Metallic;
+	float _Smoothness;
 CBUFFER_END
 #if defined(UNITY_INSTANCING_ENABLED)
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
+	UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 #endif
 
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
+
+TEXTURECUBE(unity_SpecCube0); // 获取反射环境，Unity通过unity_SpecCube0在着色器中将其变为可用。这是一个立方体映射贴图资源。
+TEXTURECUBE(unity_SpecCube1);
+SAMPLER(samplerunity_SpecCube0);
+
+// 默认情况下，反射探针的光被视为来自无限远的地方。BoxProjection 可以使小范围内的反射更精确。
+float3 BoxProjection (float3 direction, float3 position, float4 cubemapPosition, float4 boxMin, float4 boxMax)
+{
+	UNITY_BRANCH // 如果if表达式为假，则不执行if中的语句。GLES2和不可识别的平台上被定义为空，则不论表达式的结果是什么，都会执行所有分支的语句。
+	if (cubemapPosition.w > 0) {
+		float3 factors = ((direction > 0 ? boxMax.xyz : boxMin.xyz) - position) / direction;
+		float scalar = min(min(factors.x, factors.y), factors.z);
+		direction = direction * scalar + (position - cubemapPosition.xyz);
+	}
+	return direction;
+}
+
+float3 SampleEnvironment (LitSurface s) 
+{
+	float3 reflectVector = reflect(-s.viewDir, s.normal); // 获取反射向量。
+	float mip = PerceptualRoughnessToMipmapLevel(s.perceptualRoughness); // 粗糙表面会产生模糊反射，我们可以通过选择适当的 mip level 来获得该模糊反射。
+	float3 uvw = BoxProjection(reflectVector, s.position, unity_SpecCube0_ProbePosition, unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax); // 找到调整后的采样坐标。
+	float4 sample = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip); // 采样并确定最终颜色。
+	float3 color = DecodeHDREnvironment(sample, unity_SpecCube0_HDR);
+	// 混合探针
+	float blend = unity_SpecCube0_BoxMin.w;
+	if (blend < 0.99999) {
+		uvw = BoxProjection(reflectVector, s.position, unity_SpecCube1_ProbePosition, unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax);
+		sample = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube1, samplerunity_SpecCube0, uvw, mip);
+		color = lerp(DecodeHDREnvironment(sample, unity_SpecCube1_HDR), color, blend);
+	}
+	return color;
+}
 
 struct VertexInput
 {
@@ -226,7 +272,7 @@ struct VertexOutput
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VertexOutput LitPassVertex(VertexInput input)
+VertexOutput LitPassVertex (VertexInput input)
 {
 	VertexOutput output;
 	UNITY_SETUP_INSTANCE_ID(input);
@@ -234,40 +280,54 @@ VertexOutput LitPassVertex(VertexInput input)
 	float4 worldPos = mul(UNITY_MATRIX_M, float4(input.pos.xyz, 1.0));
 	output.clipPos = mul(unity_MatrixVP, worldPos);
 	output.uv = TRANSFORM_TEX(input.uv, _MainTex);
-	output.normal = mul(transpose((float3x3)unity_WorldToObject), input.normal);
-	//output.normal = mul((float3x3)UNITY_MATRIX_M, input.normal); // 如果物体使用统一的scale，可以考虑使用 3X3 模型矩阵简化法线的坐标变换。
+#if defined(UNITY_ASSUME_UNIFORM_SCALING)
+	output.normal = mul((float3x3)UNITY_MATRIX_M, input.normal); // 如果物体使用统一的scale，可以考虑使用 3X3 模型矩阵简化法线的坐标变换。
+#else
+	output.normal = normalize(mul(input.normal, (float3x3)UNITY_MATRIX_I_M));
+#endif
 	output.worldPos = worldPos.xyz;
+	LitSurface surface = GetLitSurfaceVertex(output.normal, output.worldPos);
 	// 由于后四个光源其实并没有那么重要，我们可以将其计算从fragment函数中移到vertex函数中，也就是从逐像素光照改为逐顶点光照，
 	// 这样虽然着色的精度会损失一些，但是可以减少GPU的消耗。
 	output.vertexLighting = 0;
 	for (int i = 4; i < min(unity_LightData.y, 8); i++) { // unity_LightIndices[1] 只能存储4个值。
 		int lightIndex = unity_LightIndices[1][i - 4];
-		output.vertexLighting += DiffuseLight(lightIndex, input.normal, worldPos.xyz, 1); // 顶点光源现在不会有阴影，所以将阴影衰减值设为1。
+		output.vertexLighting += GenericLight(lightIndex, surface, 1); // 顶点光源现在不会有阴影，所以将阴影衰减值设为1。
 	}
 	return output;
 }
 
-float4 LitPassFragment(VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC) : SV_TARGET
+float4 LitPassFragment (VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
 	float4 albedoAlpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 	albedoAlpha *= UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Color);
 	input.normal = normalize(input.normal); // 坐标变换后在fragment函数中进行归一化。
 	input.normal = IS_FRONT_VFACE(isFrontFace, input.normal, -input.normal); // 修正只渲染背面时，法线相反的问题。
-	float3 diffuseLight = input.vertexLighting;
+
+	float3 viewDir = normalize(_WorldSpaceCameraPos - input.worldPos.xyz); // 视线方向就是相机位置减去片段位置（归一化）。
+	LitSurface surface = GetLitSurface(input.normal, input.worldPos, viewDir, albedoAlpha.rgb, 
+		UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Metallic), UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness));
+
+#if defined(_PREMULTIPLY_ALPHA)
+	PremultiplyAlpha(surface, albedoAlpha.a); // 预乘alpha，使玻璃、水等几乎完全透明的材质，仍然可以支持镜面高光。
+#endif
+
+	float3 color = input.vertexLighting * surface.diffuse; // diffuse == albedoAlpha.rgb 即 _Color + _MainTex 的颜色值。
 #if defined(_CASCADED_SHADOWS_HARD) || defined(_CASCADED_SHADOWS_SOFT)
-	diffuseLight += MainLight(input.normal, input.worldPos);
+	color += MainLight(surface);
 #endif
 	for (int i = 0; i < min(unity_LightData.y, 4); i++) { // unity_LightIndices[0] 只能存储4个值。
 		int lightIndex = unity_LightIndices[0][i];
 		float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
-		diffuseLight += DiffuseLight(lightIndex, input.normal, input.worldPos, shadowAttenuation);
+		color += GenericLight(lightIndex, surface, shadowAttenuation);
 	}
-	float3 color = diffuseLight * albedoAlpha.rgb;
 
 #if defined(_CLIPPING_ON)
 	clip(albedoAlpha.a - _Cutoff); // alpha值小于阈值的片段将被丢弃，不会被渲染。
 #endif
+
+	color += ReflectEnvironment(surface, SampleEnvironment(surface));
 
 	return float4(color, albedoAlpha.a);
 }

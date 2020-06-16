@@ -502,6 +502,7 @@ namespace UniEasy.Rendering
                 // 预计算每个物体受哪些光源的影响，信息被存在 UnityPerDraw Buffer 的 unity_LightData 和 unity_LightIndices 字段中。
                 drawSet.perObjectData = PerObjectData.LightData | PerObjectData.LightIndices;
             }
+            drawSet.perObjectData |= PerObjectData.ReflectionProbes; // 反射环境。
 
             // 过滤，这边是指定渲染的队列（对应shader中的RenderQueue）和相关Layer的设置（-1表示全部layer）
             FilteringSettings filtSet = new FilteringSettings(RenderQueueRange.opaque);

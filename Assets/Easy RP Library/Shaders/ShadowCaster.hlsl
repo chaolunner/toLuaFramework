@@ -14,6 +14,10 @@ CBUFFER_START(UnityPerDraw)
 	// 未使用，但SRP Batching需要确保各个Pass之间UnityPerDraw buffer保持不变。
 	float4 unity_LightData; 
 	real4 unity_LightIndices[2];
+	float4 unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax;
+	float4 unity_SpecCube0_ProbePosition, unity_SpecCube0_HDR;
+	float4 unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax;
+	float4 unity_SpecCube1_ProbePosition, unity_SpecCube1_HDR;
 CBUFFER_END
 CBUFFER_START(_ShadowCasterBuffer)
 	float _ShadowBias;
@@ -50,7 +54,7 @@ struct VertexOutput
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VertexOutput ShadowCasterPassVertex(VertexInput input)
+VertexOutput ShadowCasterPassVertex (VertexInput input)
 {
 	VertexOutput output;
 	UNITY_SETUP_INSTANCE_ID(input);
@@ -71,7 +75,7 @@ VertexOutput ShadowCasterPassVertex(VertexInput input)
 	return output;
 }
 
-float4 ShadowCasterPassFragment(VertexOutput input) : SV_TARGET
+float4 ShadowCasterPassFragment (VertexOutput input) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
 #if !defined(_CLIPPING_OFF)
