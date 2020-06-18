@@ -6,8 +6,9 @@
 		_MainTex("Albedo & Alpha", 2D) = "white" {}
 		[KeywordEnum(Off, On, Shadows)] _Clipping("Alpha Clipping", Float) = 0
 		_Cutoff("Alpha Cutoff", Range(0, 1)) = 0.5
-		_Metallic("Metallic", Range(0, 1)) = 0 // 金属光泽
-		_Smoothness("Smoothness", Range(0, 1)) = 0.5 // 镜面高光
+		_Metallic("Metallic", Range(0, 1)) = 0 // 金属光泽。
+		_Smoothness("Smoothness", Range(0, 1)) = 0.5 // 镜面高光。
+		[HDR] _EmissionColor("Emission Color", Color) = (0, 0, 0, 0) // 自发光颜色。
 		[Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2 // 是否双面渲染。
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Src Blend", Float) = 1
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Dst Blend", Float) = 0
@@ -39,6 +40,9 @@
 			#pragma multi_compile _ _SHADOWS_HARD // multi_compile 可以在运行时用EnableKeyword和DisableKeyword设置，并且所有变体都会在编译时加入包中。
 			#pragma multi_compile _ _SHADOWS_SOFT
 			#pragma multi_compile _ _CASCADED_SHADOWS_HARD _CASCADED_SHADOWS_SOFT
+			#pragma multi_compile _ LIGHTMAP_ON // 当一个物体在光照贴图中被渲染时，Unity会提供需要的数据并且选一个有 LIGHTMAPON 关键字的shader变体。
+			#pragma multi_compile _ DYNAMICLIGHTMAP_ON
+			#pragma multi_compile _ _SRP_BATCHING
 
 			#pragma shader_feature _CLIPPING_ON // shader_feature 只能在编辑材质球时设置，并且不用的变体不会在编译时加入包中。 
 			#pragma shader_feature _RECEIVE_SHADOWS
@@ -52,6 +56,7 @@
 			ENDHLSL
 		}
 
+		// 阴影映射通道
 		Pass 
 		{
 			Tags { "LightMode" = "ShadowCaster" }
@@ -72,6 +77,23 @@
 			#pragma fragment ShadowCasterPassFragment
 
 			#include "ShadowCaster.hlsl"
+
+			ENDHLSL
+		}
+
+		// 光线映射通道
+		Pass
+		{
+			Tags { "LightMode" = "Meta" }
+
+			Cull Off
+
+			HLSLPROGRAM
+
+			#pragma vertex MetaPassVertex
+			#pragma fragment MetaPassFragment
+
+			#include "Meta.hlsl"
 
 			ENDHLSL
 		}

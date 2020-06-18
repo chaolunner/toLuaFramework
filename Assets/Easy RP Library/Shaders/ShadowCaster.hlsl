@@ -2,43 +2,25 @@
 #define EASYRP_SHADOWCASTER_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Input.hlsl"
 
-CBUFFER_START(UnityPerFrame)
-	float4x4 unity_MatrixVP;
-CBUFFER_END
-CBUFFER_START(UnityPerDraw)
-	float4x4 unity_ObjectToWorld;
-	float4x4 unity_WorldToObject; 
-	float4 unity_LODFade;
-	real4 unity_WorldTransformParams;
-	// 未使用，但SRP Batching需要确保各个Pass之间UnityPerDraw buffer保持不变。
-	float4 unity_LightData; 
-	real4 unity_LightIndices[2];
-	float4 unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax;
-	float4 unity_SpecCube0_ProbePosition, unity_SpecCube0_HDR;
-	float4 unity_SpecCube1_BoxMin, unity_SpecCube1_BoxMax;
-	float4 unity_SpecCube1_ProbePosition, unity_SpecCube1_HDR;
-CBUFFER_END
 CBUFFER_START(_ShadowCasterBuffer)
 	float _ShadowBias;
 CBUFFER_END
 
+TEXTURE2D(_MainTex);
+SAMPLER(sampler_MainTex);
+
 #define UNITY_MATRIX_M unity_ObjectToWorld
+#define UNITY_MATRIX_I_M unity_WorldToObject
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
-CBUFFER_START(UnityPerMaterial)
-	float4 _MainTex_ST;
-	float4 _Color;
-	float _Cutoff;
-CBUFFER_END
 #if defined(UNITY_INSTANCING_ENABLED)
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 #endif
-
-TEXTURE2D(_MainTex);
-SAMPLER(sampler_MainTex);
 
 struct VertexInput
 {

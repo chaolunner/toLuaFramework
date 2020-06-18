@@ -3,10 +3,10 @@
 
 struct LitSurface
 {
-	float3 normal, position, viewDir; // 法线，顶点位置，摄像机方向
-	float3 diffuse, specular; // 漫反射，镜面反射
-	float perceptualRoughness, roughness, fresnelStrength, reflectivity; // 感知粗糙度，物理粗糙度，菲涅耳反射强度，反射率
-	bool perfectDiffuser; // 是否只使用漫反射
+	float3 normal, position, viewDir; // 法线，顶点位置，摄像机方向。
+	float3 diffuse, specular; // 漫反射，镜面反射。
+	float perceptualRoughness, roughness, fresnelStrength, reflectivity; // 感知粗糙度，物理粗糙度，菲涅耳反射强度，反射率。
+	bool perfectDiffuser; // 是否只使用漫反射。
 };
 
 LitSurface GetLitSurface (float3 normal, float3 position, float3 viewDir, float3 color, float metallic, float smoothness, bool perfectDiffuser = false)
@@ -76,6 +76,11 @@ void PremultiplyAlpha (inout LitSurface s, inout float alpha)
 {
 	s.diffuse *= alpha;
 	alpha = lerp(alpha, 1, s.reflectivity);
+}
+
+LitSurface GetLitSurfaceMeta (float3 color, float metallic, float smoothness)
+{
+	return GetLitSurface(0, 0, 0, color, metallic, smoothness);
 }
 
 #endif // EASYRP_LIGHTING_INCLUDED

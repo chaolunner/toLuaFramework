@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EasyRP
   m_EditorClassIdentifier: 
   useDynamicBatching: 1
-  useSRPBatching: 0
+  useSRPBatching: 1
   useInstancing: 1
   shadowMapSize: 4096
   shadowDistance: 40

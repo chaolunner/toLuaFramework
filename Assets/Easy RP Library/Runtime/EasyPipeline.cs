@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
+using Unity.Collections;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+using UnityEngine.Experimental.GlobalIllumination;
 using Conditional = System.Diagnostics.ConditionalAttribute; // 与 UnityEngine.Debug 类冲突，所以取个别名。
+using LightType = UnityEngine.LightType; // 与 UnityEngine.Experimental.GlobalIllumination 类冲突，取别名。
 
 namespace UniEasy.Rendering
 {
@@ -9,29 +12,26 @@ namespace UniEasy.Rendering
     {
         public bool UseDynamicBatching;
         public bool UseInstancing;
-        // 阴影
-        public int ShadowMapSize;
-        public int ShadowCascades;
-        public float ShadowDistance;
-        public Vector3 ShadowCascadeSplit;
-
         private CommandBuffer cameraBuffer = new CommandBuffer()
         {
             name = cameraBufferName
         };
         private CullingResults cullingResults;
         private const string cameraBufferName = "Render Camera";
+        private const string SRPBatchingKeyword = "_SRP_BATCHING";
         private static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
         private static ShaderTagId[] legacyShaderTagIds = {
-        new ShaderTagId("Always"),
-        new ShaderTagId("ForwardBase"),
-        new ShaderTagId("PrepassBase"),
-        new ShaderTagId("Vertex"),
-        new ShaderTagId("VertexLMRGBM"),
-        new ShaderTagId("VertexLM")
-    };
+                                                            new ShaderTagId("Always"),
+                                                            new ShaderTagId("ForwardBase"),
+                                                            new ShaderTagId("PrepassBase"),
+                                                            new ShaderTagId("Vertex"),
+                                                            new ShaderTagId("VertexLMRGBM"),
+                                                            new ShaderTagId("VertexLM")
+                                                          };
         private static Material errorMaterial;
-        // 光源
+        private string SampleName { get; set; }
+
+        // 实时光照。
         private Vector4[] visibleLightColors = new Vector4[maxVisibleLights];
         private Vector4[] visibleLightDirectionsOrPositions = new Vector4[maxVisibleLights];
         private Vector4[] visibleLightAttenuations = new Vector4[maxVisibleLights];
@@ -43,7 +43,12 @@ namespace UniEasy.Rendering
         private static int visibleLightAttenuationsId = Shader.PropertyToID("_VisibleLightAttenuations");
         private static int visibleLightSpotDirectionsId = Shader.PropertyToID("_VisibleLightSpotDirections");
         private static int unity_LightDataID = Shader.PropertyToID("unity_LightData");
-        // 阴影
+
+        // 实时阴影。
+        public int ShadowMapSize;
+        public int ShadowCascades;
+        public float ShadowDistance;
+        public Vector3 ShadowCascadeSplit;
         private RenderTexture shadowMap, cascadedShadowMap;
         private CommandBuffer shadowBuffer = new CommandBuffer
         {
@@ -71,13 +76,65 @@ namespace UniEasy.Rendering
         private static int cascadedShadoStrengthId = Shader.PropertyToID("_CascadedShadowStrength");
         private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
 
-        private string SampleName { get; set; }
+        // 光照贴图
+#if UNITY_EDITOR
+        // Unity 默认使用传统管线的光线衰减方式来烘培光照，而我们所使用的是物理正确的平方反比衰减（physically-correct inverse squared falloff），
+        // 这对于定向光来说这不是问题，因为它们没有衰减。但对于点光源或者聚光源就会出现光贡献太多的问题，所以我们需要告诉 Unity 使用哪个衰减函数。
+        private static Lightmapping.RequestLightsDelegate lightmappingLightsDelegate = 
+            (Light[] inputLights, NativeArray<LightDataGI> outputLights) => {
+                // 我们必须遍历所有灯光，适当地配置LightDataGI结构，将其衰减设置为FalloffType.InverseSquared，然后将其复制到输出数组。
+                LightDataGI lightData = new LightDataGI();
+                for (int i = 0; i < inputLights.Length; i++)
+                {
+                    Light light = inputLights[i];
+                    switch (light.type)
+                    {
+                        case LightType.Directional:
+                            var directionalLight = new DirectionalLight();
+                            LightmapperUtils.Extract(light, ref directionalLight);
+                            lightData.Init(ref directionalLight);
+                            break;
+                        case LightType.Point:
+                            var pointLight = new PointLight();
+                            LightmapperUtils.Extract(light, ref pointLight);
+                            lightData.Init(ref pointLight);
+                            break;
+                        case LightType.Spot:
+                            var spotLight = new SpotLight();
+                            LightmapperUtils.Extract(light, ref spotLight);
+                            lightData.Init(ref spotLight);
+                            break;
+                        case LightType.Area:
+                            var rectangleLight = new RectangleLight();
+                            LightmapperUtils.Extract(light, ref rectangleLight);
+                            lightData.Init(ref rectangleLight);
+                            break;
+                        default:
+                            lightData.InitNoBake(light.GetInstanceID());
+                            break;
+                    }
+                    lightData.falloff = FalloffType.InverseSquared;
+                    outputLights[i] = lightData;
+                }
+            };
+#endif
 
         public EasyPipeline(bool useSRPBatching)
         {
             GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatching;
-            GraphicsSettings.lightsUseLinearIntensity = true; // 采用线性空间，而不是gamma空间。
+            GraphicsSettings.lightsUseLinearIntensity = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+#if UNITY_EDITOR
+            Lightmapping.SetDelegate(lightmappingLightsDelegate);
+#endif
         }
+
+#if UNITY_EDITOR
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            Lightmapping.ResetDelegate();
+        }
+#endif
 
         // 这个函数会在绘制管线时调用，两个参数，第一个为所有渲染相关的内容（不光只有
         // 渲染目标，同时还有灯光，反射探针，光照探针等等相关的东西），第二个为相机组。
@@ -161,12 +218,12 @@ namespace UniEasy.Rendering
         {
             // 剪裁，这边应该是相机的视锥剪裁相关。
             // 自定义一个剪裁参数，ScriptableCullingParameters类里有很多可以设置的东西。我们先采用相机的默认剪裁参数。
-            // 直接使用相机默认剪裁参数
+            // 直接使用相机默认剪裁参数。
             if (camera.TryGetCullingParameters(out ScriptableCullingParameters cullParam))
             {
                 // 在 Cull 之前设置阴影距离。
                 cullParam.shadowDistance = Mathf.Min(ShadowDistance, camera.farClipPlane);
-                // 获取剪裁之后的全部结果（其中不仅有渲染物体，还有相关的其他渲染要素）
+                // 获取剪裁之后的全部结果（其中不仅有渲染物体，还有相关的其他渲染要素）。
                 cullingResults = context.Cull(ref cullParam);
                 return true;
             }
@@ -314,7 +371,7 @@ namespace UniEasy.Rendering
                 if (shadowData[i].z > 0f)
                 {
                     validShadows = cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(i, 0, 1, Vector3.right, (int)tileSize,
-                            cullingResults.visibleLights[i].light.shadowNearPlane, 
+                            cullingResults.visibleLights[i].light.shadowNearPlane,
                             out viewMatrix, out projectionMatrix, out splitData);
                 }
                 else
@@ -479,6 +536,7 @@ namespace UniEasy.Rendering
             CameraClearFlags flags = camera.clearFlags;
             cameraBuffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
             cameraBuffer.BeginSample(SampleName);
+            CoreUtils.SetKeyword(cameraBuffer, SRPBatchingKeyword, GraphicsSettings.useScriptableRenderPipelineBatching);
             ExecuteBuffer(context, camera);
         }
 
@@ -503,8 +561,11 @@ namespace UniEasy.Rendering
                 drawSet.perObjectData = PerObjectData.LightData | PerObjectData.LightIndices;
             }
             drawSet.perObjectData |= PerObjectData.ReflectionProbes; // 反射环境。
+            drawSet.perObjectData |= PerObjectData.Lightmaps; // 采样光照贴图。
+            drawSet.perObjectData |= PerObjectData.LightProbe; // 采样光照探针。
+            drawSet.perObjectData |= PerObjectData.LightProbeProxyVolume; // 采样多个光照探针。
 
-            // 过滤，这边是指定渲染的队列（对应shader中的RenderQueue）和相关Layer的设置（-1表示全部layer）
+            // 过滤，这边是指定渲染的队列（对应shader中的RenderQueue）和相关Layer的设置（-1表示全部layer）。
             FilteringSettings filtSet = new FilteringSettings(RenderQueueRange.opaque);
 
             context.DrawRenderers(cullingResults, ref drawSet, ref filtSet);

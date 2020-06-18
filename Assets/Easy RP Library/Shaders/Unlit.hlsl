@@ -26,7 +26,7 @@ CBUFFER_END
 // 注意，不要在 UNITY_MATRIX_M 宏之前引入，会导致启用Instancing的物体位置不对。
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
-CBUFFER_START(UnityPerMaterial) // UnityPerMaterial缓冲区仅在切换材质时改变。
+CBUFFER_START(UnityPerMaterial) // UnityPerMaterial 缓冲区仅在切换材质时改变。
 	float4 _MainTex_ST;
 	float4 _Color;
 CBUFFER_END

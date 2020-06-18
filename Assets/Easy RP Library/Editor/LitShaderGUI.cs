@@ -89,6 +89,14 @@ namespace UniEasy.Rendering
             }
         }
 
+        bool EmissiveIsBlack
+        {
+            get
+            {
+                return FindProperty("_EmissionColor", properties).colorValue == Color.black;
+            }
+        }
+
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             base.OnGUI(materialEditor, properties);
@@ -98,6 +106,23 @@ namespace UniEasy.Rendering
             this.properties = properties;
 
             CastShadowsToggle();
+
+            EditorGUI.BeginChangeCheck();
+            editor.LightmapEmissionProperty(); // 是否启用全局照明。
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (Material m in editor.targets)
+                {
+                    // 光启用全局照明是不够的，因为Unity 使用了另一个优化。如果一个材质的自发光最终是黑色的，它会跳过。
+                    // 这个是通过把材质 globalIlluminationFlags 设置为 MaterialGlobalIlluminationFlags.EmissiveIsBlack 来实现的。
+                    // 所以我们需要在全局照明属性改变时，将标记移除。
+                    m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                    if (EmissiveIsBlack) 
+                    {
+                        m.globalIlluminationFlags |= MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                    }
+                }
+            }
 
             showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true);
             if (showPresets)
