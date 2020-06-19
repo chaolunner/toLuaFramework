@@ -30,6 +30,8 @@ CBUFFER_START(UnityPerDraw) // UnityPerDraw 缓冲区中的数据在每个物体
     float4x4 unity_ProbeVolumeWorldToObject;
     float3 unity_ProbeVolumeSizeInv;
     float3 unity_ProbeVolumeMin;
+    // 阴影探针的缓冲数据（其实就是光照探针，光照探针可以起到阴影探针的作用）。
+    float4 unity_ProbesOcclusion;
 CBUFFER_END
 
 CBUFFER_START(UnityPerMaterial) // UnityPerMaterial 缓冲区仅在切换材质时改变。

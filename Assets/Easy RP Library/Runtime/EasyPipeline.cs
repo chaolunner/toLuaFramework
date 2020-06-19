@@ -49,6 +49,7 @@ namespace UniEasy.Rendering
         public int ShadowCascades;
         public float ShadowDistance;
         public Vector3 ShadowCascadeSplit;
+        private Vector4 globalShadowData;
         private RenderTexture shadowMap, cascadedShadowMap;
         private CommandBuffer shadowBuffer = new CommandBuffer
         {
@@ -76,7 +77,7 @@ namespace UniEasy.Rendering
         private static int cascadedShadoStrengthId = Shader.PropertyToID("_CascadedShadowStrength");
         private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
 
-        // 光照贴图
+        // 烘培光照。
 #if UNITY_EDITOR
         // Unity 默认使用传统管线的光线衰减方式来烘培光照，而我们所使用的是物理正确的平方反比衰减（physically-correct inverse squared falloff），
         // 这对于定向光来说这不是问题，因为它们没有衰减。但对于点光源或者聚光源就会出现光贡献太多的问题，所以我们需要告诉 Unity 使用哪个衰减函数。
@@ -119,13 +120,29 @@ namespace UniEasy.Rendering
             };
 #endif
 
-        public EasyPipeline(bool useSRPBatching)
+        // 烘培阴影。
+        private Vector4[] visibleLightOcclusionMasks = new Vector4[maxVisibleLights];
+        private const string shadowmaskKeyword = "_SHADOWMASK";
+        private const string distanceShadowmaskKeyword = "_DISTANCE_SHADOWMASK";
+        private const string subtractiveLightingKeyword = "_SUBTRACTIVE_LIGHTING";
+        private static int visibleLightOcclusionMasksId = Shader.PropertyToID("_VisibleLightOcclusionMasks");
+        private static int subtractiveShadowColorId = Shader.PropertyToID("_SubtractiveShadowColor");
+        private static Vector4[] occlusionMasks = { 
+                                                    new Vector4(-1f, 0f, 0f, 0f),
+                                                    new Vector4(1f, 0f, 0f, 0f),
+                                                    new Vector4(0f, 1f, 0f, 0f),
+                                                    new Vector4(0f, 0f, 1f, 0f),
+                                                    new Vector4(0f, 0f, 0f, 1f)
+                                                  };
+
+        public EasyPipeline(bool useSRPBatching, float shadowFadeRange)
         {
             GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatching;
             GraphicsSettings.lightsUseLinearIntensity = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 #if UNITY_EDITOR
             Lightmapping.SetDelegate(lightmappingLightsDelegate);
 #endif
+            globalShadowData.y = 1f / shadowFadeRange;
         }
 
 #if UNITY_EDITOR
@@ -168,6 +185,7 @@ namespace UniEasy.Rendering
                         cameraBuffer.DisableShaderKeyword(shadowsHardKeyword);
                         cameraBuffer.DisableShaderKeyword(shadowsSoftKeyword);
                     }
+                    cameraBuffer.SetGlobalVector(globalShadowDataId, globalShadowData);
                 }
                 else
                 {
@@ -223,6 +241,8 @@ namespace UniEasy.Rendering
             {
                 // 在 Cull 之前设置阴影距离。
                 cullParam.shadowDistance = Mathf.Min(ShadowDistance, camera.farClipPlane);
+                // 设置阴影渐隐范围。
+                globalShadowData.z = 1f - cullParam.shadowDistance * globalShadowData.y;
                 // 获取剪裁之后的全部结果（其中不仅有渲染物体，还有相关的其他渲染要素）。
                 cullingResults = context.Cull(ref cullParam);
                 return true;
@@ -233,6 +253,8 @@ namespace UniEasy.Rendering
         private void ConfigureLights()
         {
             mainLightExists = false;
+            bool shadowmaskExists = false;
+            bool subtractiveLighting = false;
             shadowTileCount = 0;
             for (int i = 0; i < cullingResults.visibleLights.Length; i++)
             {
@@ -243,6 +265,22 @@ namespace UniEasy.Rendering
                 Vector4 attenuation = Vector4.zero;
                 attenuation.w = 1f; // 为了保证不同类型的光照计算的一致性（用同样的shader代码），将w分量设置为1。
                 Vector4 shadow = Vector4.zero;
+
+                LightBakingOutput baking = light.light.bakingOutput;
+                // 有四种可能的掩码，我们可以在静态数组（occlusionMasks）中预定义。
+                // 但也有可能有些灯光不使用阴影遮罩。我们将通过将第一个遮罩组件设置为-1来指示这一点。
+                // 如果灯光不使用阴影遮罩，则通道为-1，因此在检索预定义的 occlusionMasks 时+1。
+                visibleLightOcclusionMasks[i] = occlusionMasks[baking.occlusionMaskChannel + 1];
+                if (baking.lightmapBakeType == LightmapBakeType.Mixed)
+                {
+                    shadowmaskExists |= baking.mixedLightingMode == MixedLightingMode.Shadowmask; // 判读是否存在烘培阴影。
+                    if (baking.mixedLightingMode == MixedLightingMode.Subtractive)
+                    {
+                        subtractiveLighting = true;
+                        cameraBuffer.SetGlobalColor(subtractiveShadowColorId, UnityEngine.RenderSettings.subtractiveShadowColor.linear);
+                    }
+                }
+
                 if (light.lightType == LightType.Directional)
                 {
                     // 方向光的光源方向信息可以通过光源的旋转信息获得，光源的方向是它的z轴方向。
@@ -288,6 +326,10 @@ namespace UniEasy.Rendering
                         // 设置阴影。
                         shadow = ConfigureShadows(i, light.light);
                     }
+                    else
+                    {
+                        visibleLightSpotDirections[i] = Vector4.one;
+                    }
                 }
                 // 填充点光源或聚光灯的光照范围。
                 visibleLightAttenuations[i] = attenuation;
@@ -298,6 +340,7 @@ namespace UniEasy.Rendering
             cameraBuffer.SetGlobalVectorArray(visibleLightDirectionsOrPositionsId, visibleLightDirectionsOrPositions);
             cameraBuffer.SetGlobalVectorArray(visibleLightAttenuationsId, visibleLightAttenuations); // 点光源。
             cameraBuffer.SetGlobalVectorArray(visibleLightSpotDirectionsId, visibleLightSpotDirections); // 聚光灯。
+            cameraBuffer.SetGlobalVectorArray(visibleLightOcclusionMasksId, visibleLightOcclusionMasks);
 
             // 尽管目前我们已经支持到场景中最多16个光源，但是依然无法避免有可能会存在更多光源的情况。
             // 当超出时，我们需要告诉Unity需要将一些光源舍弃以避免数组的越界。
@@ -313,6 +356,11 @@ namespace UniEasy.Rendering
                 cullingResults.SetLightIndexMap(lightIndexs);
                 lightIndexs.Dispose();
             }
+
+            bool useDistanceShadowmask = QualitySettings.shadowmaskMode == ShadowmaskMode.DistanceShadowmask;
+            CoreUtils.SetKeyword(cameraBuffer, shadowmaskKeyword, shadowmaskExists && !useDistanceShadowmask);
+            CoreUtils.SetKeyword(cameraBuffer, distanceShadowmaskKeyword, shadowmaskExists && useDistanceShadowmask);
+            CoreUtils.SetKeyword(cameraBuffer, subtractiveLightingKeyword, subtractiveLighting);
         }
 
         private Vector4 ConfigureShadows(int lightIndex, Light shadowLight)
@@ -337,12 +385,11 @@ namespace UniEasy.Rendering
             else if (shadowTileCount <= 9) { split = 3; }
             float tileSize = ShadowMapSize / split;
             float tileScale = 1f / split;
-            Rect tileViewport = new Rect(0f, 0f, tileSize, tileSize);
+            globalShadowData.x = tileScale;
 
             shadowMap = SetShadowRenderTarget(); // 设置阴影渲染目标。
 
             shadowBuffer.BeginSample(shadowBufferName);
-            shadowBuffer.SetGlobalVector(globalShadowDataId, new Vector4(tileScale, ShadowDistance * ShadowDistance));
             context.ExecuteCommandBuffer(shadowBuffer);
             shadowBuffer.Clear();
             int tileIndex = 0;
@@ -477,7 +524,6 @@ namespace UniEasy.Rendering
             float tileSize = ShadowMapSize / 2;
             cascadedShadowMap = SetShadowRenderTarget();
             shadowBuffer.BeginSample(shadowBufferName);
-            shadowBuffer.SetGlobalVector(globalShadowDataId, new Vector4(0, ShadowDistance * ShadowDistance));
             context.ExecuteCommandBuffer(shadowBuffer);
             shadowBuffer.Clear();
             Light shadowLight = cullingResults.visibleLights[0].light;
@@ -560,10 +606,13 @@ namespace UniEasy.Rendering
                 // 预计算每个物体受哪些光源的影响，信息被存在 UnityPerDraw Buffer 的 unity_LightData 和 unity_LightIndices 字段中。
                 drawSet.perObjectData = PerObjectData.LightData | PerObjectData.LightIndices;
             }
-            drawSet.perObjectData |= PerObjectData.ReflectionProbes; // 反射环境。
-            drawSet.perObjectData |= PerObjectData.Lightmaps; // 采样光照贴图。
-            drawSet.perObjectData |= PerObjectData.LightProbe; // 采样光照探针。
-            drawSet.perObjectData |= PerObjectData.LightProbeProxyVolume; // 采样多个光照探针。
+            drawSet.perObjectData |= PerObjectData.ReflectionProbes; // 发送反射环境数据到GPU。
+            drawSet.perObjectData |= PerObjectData.Lightmaps; // 发送采样的光照贴图数据到GPU。
+            drawSet.perObjectData |= PerObjectData.LightProbe; // 发送采样的光照探针数据到GPU。
+            drawSet.perObjectData |= PerObjectData.LightProbeProxyVolume; // 发送采样的多个光照探针数据到GPU。
+            drawSet.perObjectData |= PerObjectData.ShadowMask; // 发送烘培阴影数据到GPU。
+            drawSet.perObjectData |= PerObjectData.OcclusionProbe; // 发送采样的阴影探针（即光照探针，也起到阴影探针的作用）数据到GPU。
+            drawSet.perObjectData |= PerObjectData.OcclusionProbeProxyVolume; // 发送采样的多个阴影探针（即多个光照探针，也起到多个阴影探针的作用）数据到GPU。
 
             // 过滤，这边是指定渲染的队列（对应shader中的RenderQueue）和相关Layer的设置（-1表示全部layer）。
             FilteringSettings filtSet = new FilteringSettings(RenderQueueRange.opaque);

@@ -28,6 +28,7 @@ namespace UniEasy.Rendering
         [SerializeField] private ShadowMapSize shadowMapSize = ShadowMapSize._1024;
         [SerializeField] private float shadowDistance = 100f;
         [SerializeField] private ShadowCascades shadowCascades = ShadowCascades.Four;
+        [SerializeField, Range(0.01f, 2f)] private float shadowFadeRange = 1f;
 
         [SerializeField, HideInInspector]
         private float twoCascadesSplit = 0.25f;
@@ -38,7 +39,7 @@ namespace UniEasy.Rendering
         {
             Vector3 shadowCascadeSplit = shadowCascades == ShadowCascades.Four ? fourCascadesSplit : new Vector3(twoCascadesSplit, 0f);
             // 创建自定义渲染管线并返回。
-            return new EasyPipeline(useSRPBatching)
+            return new EasyPipeline(useSRPBatching, shadowFadeRange)
             {
                 UseDynamicBatching = useDynamicBatching,
                 UseInstancing = useInstancing,

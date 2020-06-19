@@ -1,7 +1,7 @@
 ﻿#ifndef EASYRP_LIT_INCLUDED
 #define EASYRP_LIT_INCLUDED
 
-/* ===== ===== ===== ===== ===== ===== START 导入文件 START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START 导入文件 START ===== ===== ===== ===== ===== */
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 // 选择适当的反射清晰度，这依赖于 PerceptualRoughnessToMipmapLevel 函数。
@@ -15,9 +15,9 @@
 // cbuffer 数据。
 #include "Input.hlsl"
 
-/* ===== ===== ===== ===== ===== ===== END   导入文件   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END 导入文件 END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== START 基础数据 START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START 基础数据 START ===== ===== ===== ===== ===== */
 
 TEXTURE2D(_MainTex);
 SAMPLER(sampler_MainTex);
@@ -26,148 +26,16 @@ SAMPLER(sampler_MainTex);
 #define UNITY_MATRIX_I_M unity_WorldToObject
 #define MAX_VISIBLE_LIGHTS 16 // 最大可见光数量。
 
-/* ===== ===== ===== ===== ===== ===== END   基础数据   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END 基础数据 END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== START 实时阴影 START ===== ===== ===== ===== ===== ===== */
-
-CBUFFER_START(_ShadowBuffer)
-	float4x4 _WorldToShadowMatrices[MAX_VISIBLE_LIGHTS];
-	float4x4 _WorldToShadowCascadeMatrices[4];
-	float4 _CascadeCullingSpheres[4];
-	float4 _ShadowData[MAX_VISIBLE_LIGHTS];
-	float4 _ShadowMapSize;
-	float4 _CascadedShadowMapSize;
-	float4 _GlobalShadowData;
-	float _CascadedShadowStrength;
-CBUFFER_END
-
-TEXTURE2D_SHADOW(_ShadowMap); // 定义阴影纹理
-SAMPLER_CMP(sampler_ShadowMap); // 定义阴影采样器状态
-
-TEXTURE2D_SHADOW(_CascadedShadowMap); // 定义主光源级联阴影纹理
-SAMPLER_CMP(sampler_CascadedShadowMap); // 定义主光源级联阴影采样器状态
-
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl" // 软阴影采样（SampleShadow_ComputeSamples_Tent_5x5）需要。
-
-float HardShadowAttenuation (float4 shadowPos, bool cascade = false)
-{
-	// 通过 SAMPLE_TEXTURE2D_SHADOW 这个宏采样阴影贴图。它需要一张贴图，一个采样器状态，以及对应的阴影空间位置作为参数。
-	// 如果该点位置的z值比在阴影贴图中对应点的值要小就会返回1，这说明他比任何投射阴影的物体离光源都要近。
-	// 反之，在阴影投射物后面就会返回0。因为采样器会在双线性插值之前先进行比较，所以阴影边缘会混合阴影贴图的多个纹素（texels）。
-	if (cascade) {
-		return SAMPLE_TEXTURE2D_SHADOW(_CascadedShadowMap, sampler_CascadedShadowMap, shadowPos.xyz);
-	} else {
-		return SAMPLE_TEXTURE2D_SHADOW(_ShadowMap, sampler_ShadowMap, shadowPos.xyz);
-	}
-}
-
-float SoftShadowAttenuation (float4 shadowPos, bool cascade = false)
-{
-	real tentWeights[9]; // real不是一个实际的数字类型，而是一个宏，根据需要自动选择float或者half。
-	real2 tentUVs[9];
-	float4 size = cascade ? _CascadedShadowMapSize : _ShadowMapSize;
-	SampleShadow_ComputeSamples_Tent_5x5(size, shadowPos.xy, tentWeights, tentUVs);
-	float attenuation = 0;
-	for (int i = 0; i < 9; i++) {
-		attenuation += tentWeights[i] * HardShadowAttenuation(float4(tentUVs[i].xy, shadowPos.z, 0), cascade);
-	}
-	return attenuation;
-}
-
-float DistanceToCameraSqr (float3 worldPos) 
-{
-	float3 cameraToFragment = worldPos - _WorldSpaceCameraPos;
-	return dot(cameraToFragment, cameraToFragment);
-}
-
-float ShadowAttenuation (int index, float3 worldPos)
-{
-#if !defined(_RECEIVE_SHADOWS)
-	return 1.0;
-#elif !defined(_SHADOWS_HARD) && !defined(_SHADOWS_SOFT)
-	return 1.0;
-#endif
-	if (_ShadowData[index].x <= 0 || DistanceToCameraSqr(worldPos) > _GlobalShadowData.y) {
-		return 1.0;
-	}
-	float4 shadowPos = mul(_WorldToShadowMatrices[index], float4(worldPos, 1.0));
-	// 从齐次坐标转换到常规坐标。
-	shadowPos.xyz /= shadowPos.w;
-	// 在透视除法后对阴影位置的xy坐标做限制，将其限制在0-1范围内，确保阴影采样坐标在tile内。
-	shadowPos.xy = saturate(shadowPos.xy);
-	shadowPos.xy = shadowPos.xy * _GlobalShadowData.x + _ShadowData[index].zw;
-	float attenuation;
-#if defined(_SHADOWS_HARD)
-	#if defined(_SHADOWS_SOFT)
-		if (_ShadowData[index].y == 0) {
-			attenuation = HardShadowAttenuation(shadowPos);
-		}
-		else
-		{
-			attenuation = SoftShadowAttenuation(shadowPos);
-		}
-	#else
-		attenuation = HardShadowAttenuation(shadowPos);
-	#endif
-#else
-	attenuation = SoftShadowAttenuation(shadowPos);
-#endif
-
-	return lerp(1, attenuation, _ShadowData[index].x);
-}
-
-// 判断一个点是否在剔除球体内。
-float InsideCascadeCullingSphere (int index, float3 worldPos) 
-{
-	float4 s = _CascadeCullingSpheres[index];
-	return dot(worldPos - s.xyz, worldPos - s.xyz) < s.w;
-}
-
-float CascadedShadowAttenuation (float3 worldPos) 
-{
-#if !defined(_RECEIVE_SHADOWS)
-	return 1.0;
-#elif !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
-	return 1.0;
-#endif
-	// 因为剔除球不会与相机和阴影距离对齐，所以级联阴影不会和其他阴影一样在同一距离消失。
-	// 我们也一样可以在 CascadedShadowAttenuation 中检查阴影距离来实现统一的效果。
-	if (DistanceToCameraSqr(worldPos) > _GlobalShadowData.y) {
-		return 1.0;
-	}
-	// 一点位于一个球的同时，还在更大的球里面。
-	// 我们最终可能得到五种情况： (1,1,1,1)，(0,1,1,1)，(0,0,1,1)，(0,0,0,1)，(0,0,0,0)。
-	float4 cascadeFlags = float4(
-		InsideCascadeCullingSphere(0, worldPos),
-		InsideCascadeCullingSphere(1, worldPos),
-		InsideCascadeCullingSphere(2, worldPos),
-		InsideCascadeCullingSphere(3, worldPos)
-	);
-	//return dot(cascadeFlags, 0.25); // 可以用来观察级联层次。
-	cascadeFlags.yzw = saturate(cascadeFlags.yzw - cascadeFlags.xyz);
-	float cascadeIndex = 4 - dot(cascadeFlags, float4(4, 3, 2, 1));
-	if (cascadeIndex == 4) { // 在所有级联阴影贴图之外，直接忽略。
-		return 1.0; 
-	}
-	float4 shadowPos = mul(_WorldToShadowCascadeMatrices[cascadeIndex], float4(worldPos, 1.0));
-	float attenuation;
-#if defined(_CASCADED_SHADOWS_HARD)
-	attenuation = HardShadowAttenuation(shadowPos, true);
-#else
-	attenuation = SoftShadowAttenuation(shadowPos, true);
-#endif
-	return lerp(1, attenuation, _CascadedShadowStrength);
-}
-
-/* ===== ===== ===== ===== ===== ===== END   实时阴影   END ===== ===== ===== ===== ===== ===== */
-
-/* ===== ===== ===== ===== ===== ===== START 实时光照 START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START 实时光照 START ===== ===== ===== ===== ===== */
 
 CBUFFER_START(_LightBuffer)
 	float4 _VisibleLightColors[MAX_VISIBLE_LIGHTS];
 	float4 _VisibleLightDirectionsOrPositions[MAX_VISIBLE_LIGHTS];
 	float4 _VisibleLightAttenuations[MAX_VISIBLE_LIGHTS];
 	float4 _VisibleLightSpotDirections[MAX_VISIBLE_LIGHTS];
+	float4 _VisibleLightOcclusionMasks[MAX_VISIBLE_LIGHTS];
 CBUFFER_END
 
 float3 GenericLight(int index, LitSurface s, float shadowAttenuation)
@@ -195,9 +63,8 @@ float3 GenericLight(int index, LitSurface s, float shadowAttenuation)
 	return color * lightColor;
 }
 
-float3 MainLight (LitSurface s) // LitSurface 来自 Light.hlsl 文件。
+float3 MainLight (LitSurface s, float shadowAttenuation) // LitSurface 来自 Light.hlsl 文件。
 {
-	float shadowAttenuation = CascadedShadowAttenuation(s.position); // s.position == 世界位置。
 	float3 lightColor = _VisibleLightColors[0].rgb;
 	float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
 	float3 color = LightSurface(s, lightDirection); // 计算漫反射。
@@ -205,9 +72,197 @@ float3 MainLight (LitSurface s) // LitSurface 来自 Light.hlsl 文件。
 	return color * lightColor;
 }
 
-/* ===== ===== ===== ===== ===== ===== END   实时光照   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END 实时光照 END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== START 高光反射 START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START 实时阴影 START ===== ===== ===== ===== ===== */
+
+CBUFFER_START(_ShadowBuffer)
+	float4x4 _WorldToShadowMatrices[MAX_VISIBLE_LIGHTS];
+	float4x4 _WorldToShadowCascadeMatrices[4];
+	float4 _CascadeCullingSpheres[4];
+	float4 _ShadowData[MAX_VISIBLE_LIGHTS];
+	float4 _ShadowMapSize;
+	float4 _CascadedShadowMapSize;
+	float4 _GlobalShadowData;
+	float _CascadedShadowStrength;
+	float4 _SubtractiveShadowColor;
+CBUFFER_END
+
+TEXTURE2D_SHADOW(_ShadowMap); // 定义阴影纹理
+SAMPLER_CMP(sampler_ShadowMap); // 定义阴影采样器状态
+
+TEXTURE2D_SHADOW(_CascadedShadowMap); // 定义主光源级联阴影纹理
+SAMPLER_CMP(sampler_CascadedShadowMap); // 定义主光源级联阴影采样器状态
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl" // 软阴影采样（SampleShadow_ComputeSamples_Tent_5x5）需要。
+
+float HardShadowAttenuation(float4 shadowPos, bool cascade = false)
+{
+	// 通过 SAMPLE_TEXTURE2D_SHADOW 这个宏采样阴影贴图。它需要一张贴图，一个采样器状态，以及对应的阴影空间位置作为参数。
+	// 如果该点位置的z值比在阴影贴图中对应点的值要小就会返回1，这说明他比任何投射阴影的物体离光源都要近。
+	// 反之，在阴影投射物后面就会返回0。因为采样器会在双线性插值之前先进行比较，所以阴影边缘会混合阴影贴图的多个纹素（texels）。
+	if (cascade) {
+		return SAMPLE_TEXTURE2D_SHADOW(_CascadedShadowMap, sampler_CascadedShadowMap, shadowPos.xyz);
+	}
+	else {
+		return SAMPLE_TEXTURE2D_SHADOW(_ShadowMap, sampler_ShadowMap, shadowPos.xyz);
+	}
+}
+
+float SoftShadowAttenuation(float4 shadowPos, bool cascade = false)
+{
+	real tentWeights[9]; // real不是一个实际的数字类型，而是一个宏，根据需要自动选择float或者half。
+	real2 tentUVs[9];
+	float4 size = cascade ? _CascadedShadowMapSize : _ShadowMapSize;
+	SampleShadow_ComputeSamples_Tent_5x5(size, shadowPos.xy, tentWeights, tentUVs);
+	float attenuation = 0;
+	for (int i = 0; i < 9; i++) {
+		attenuation += tentWeights[i] * HardShadowAttenuation(float4(tentUVs[i].xy, shadowPos.z, 0), cascade);
+	}
+	return attenuation;
+}
+
+// 基于全局阴影数据计算阴影混合因子的函数。
+float RealtimeToBakedShadowsInterpolator(float3 worldPos)
+{
+	float d = distance(worldPos, _WorldSpaceCameraPos);
+	return saturate(d * _GlobalShadowData.y + _GlobalShadowData.z);
+}
+
+// 混合实时阴影和烘培阴影的函数。
+float MixRealtimeAndBakedShadowAttenuation(float realtime, float4 bakedShadows, int lightIndex, float3 worldPos, bool isMainLight = false)
+{
+	float t = RealtimeToBakedShadowsInterpolator(worldPos);
+	float fadedRealtime = saturate(realtime + t);
+	float4 occlusionMask = _VisibleLightOcclusionMasks[lightIndex];
+	// 烘培阴影的值越接近灯光的occlusionMaskChannel值，阴影衰减的越厉害（即该灯光可以照亮这块区域）。
+	float baked = dot(bakedShadows, occlusionMask);
+	bool hasBakedShadows = occlusionMask.x >= 0.0;
+#if defined(_SHADOWMASK)
+	if (hasBakedShadows) {
+		// 使用常规阴影遮罩模式时，只有动态对象投射实时阴影。这样可以消除大量的实时阴影，用阴影贴图和阴影探针替换它们。
+		// 虽然渲染成本较低且不限制阴影距离，但渲染质量比使用实时阴影要低。
+		fadedRealtime = min(fadedRealtime, baked);
+	}
+#elif defined(_DISTANCE_SHADOWMASK)
+	if (hasBakedShadows) {
+		// 在距离阴影遮罩模式下，点光源总是使用烘培阴影。
+		bool bakedOnly = _VisibleLightSpotDirections[lightIndex].w > 0.0;
+		if (!isMainLight && bakedOnly) {
+			fadedRealtime = baked;
+		}
+		// 距离阴影遮罩模式，在阴影距离内的所有阴影都是实时的，而阴影距离外的则使用烘焙阴影。
+		// 因此，这种模式比只使用实时阴影更昂贵，而不是更便宜。
+		fadedRealtime = lerp(realtime, baked, t);
+	}
+#elif defined(_SUBTRACTIVE_LIGHTING)
+	#if !defined(LIGHTMAP_ON)
+		if (isMainLight) {
+			fadedRealtime = min(fadedRealtime, bakedShadows.x);
+		}
+	#endif
+	#if !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
+		if (lightIndex == 0) {
+			fadedRealtime = bakedShadows.x;
+		}
+	#endif
+#endif
+	return fadedRealtime;
+}
+
+bool SkipRealtimeShadows(float3 worldPos)
+{
+	// 当该值达到1时，将不再使用实时阴影，因此我们可以跳过采样。
+	return RealtimeToBakedShadowsInterpolator(worldPos) >= 1.0;
+}
+
+float ShadowAttenuation(int index, float3 worldPos)
+{
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#elif !defined(_SHADOWS_HARD) && !defined(_SHADOWS_SOFT)
+	return 1.0;
+#endif
+	if (_ShadowData[index].x <= 0 || SkipRealtimeShadows(worldPos)) {
+		return 1.0;
+	}
+	float4 shadowPos = mul(_WorldToShadowMatrices[index], float4(worldPos, 1.0));
+	// 从齐次坐标转换到常规坐标。
+	shadowPos.xyz /= shadowPos.w;
+	// 在透视除法后对阴影位置的xy坐标做限制，将其限制在0-1范围内，确保阴影采样坐标在tile内。
+	shadowPos.xy = saturate(shadowPos.xy);
+	shadowPos.xy = shadowPos.xy * _GlobalShadowData.x + _ShadowData[index].zw;
+	float attenuation;
+#if defined(_SHADOWS_HARD)
+#if defined(_SHADOWS_SOFT)
+	if (_ShadowData[index].y == 0) {
+		attenuation = HardShadowAttenuation(shadowPos);
+	}
+	else
+	{
+		attenuation = SoftShadowAttenuation(shadowPos);
+	}
+#else
+	attenuation = HardShadowAttenuation(shadowPos);
+#endif
+#else
+	attenuation = SoftShadowAttenuation(shadowPos);
+#endif
+
+	return lerp(1, attenuation, _ShadowData[index].x);
+}
+
+// 判断一个点是否在剔除球体内。
+float InsideCascadeCullingSphere(int index, float3 worldPos)
+{
+	float4 s = _CascadeCullingSpheres[index];
+	return dot(worldPos - s.xyz, worldPos - s.xyz) < s.w;
+}
+
+float CascadedShadowAttenuation(float3 worldPos, bool applyStrength = true)
+{
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#elif !defined(_CASCADED_SHADOWS_HARD) && !defined(_CASCADED_SHADOWS_SOFT)
+	return 1.0;
+#endif
+	// 因为剔除球不会与相机和阴影距离对齐，所以级联阴影不会和其他阴影一样在同一距离消失。
+	// 我们也一样可以在 CascadedShadowAttenuation 中检查阴影距离来实现统一的效果。
+	if (SkipRealtimeShadows(worldPos)) {
+		return 1.0;
+	}
+	// 一点位于一个球的同时，还在更大的球里面。
+	// 我们最终可能得到五种情况： (1,1,1,1)，(0,1,1,1)，(0,0,1,1)，(0,0,0,1)，(0,0,0,0)。
+	float4 cascadeFlags = float4(
+		InsideCascadeCullingSphere(0, worldPos),
+		InsideCascadeCullingSphere(1, worldPos),
+		InsideCascadeCullingSphere(2, worldPos),
+		InsideCascadeCullingSphere(3, worldPos)
+	);
+	//return dot(cascadeFlags, 0.25); // 可以用来观察级联层次。
+	cascadeFlags.yzw = saturate(cascadeFlags.yzw - cascadeFlags.xyz);
+	float cascadeIndex = 4 - dot(cascadeFlags, float4(4, 3, 2, 1));
+	if (cascadeIndex == 4) { // 在所有级联阴影贴图之外，直接忽略。
+		return 1.0;
+	}
+	float4 shadowPos = mul(_WorldToShadowCascadeMatrices[cascadeIndex], float4(worldPos, 1.0));
+	float attenuation;
+#if defined(_CASCADED_SHADOWS_HARD)
+	attenuation = HardShadowAttenuation(shadowPos, true);
+#else
+	attenuation = SoftShadowAttenuation(shadowPos, true);
+#endif
+	if (applyStrength) {
+		return lerp(1, attenuation, _CascadedShadowStrength);
+	}
+	else {
+		return attenuation;
+	}
+}
+
+/* ===== ===== ===== ===== ===== END 实时阴影 END ===== ===== ===== ===== ===== */
+
+/* ===== ===== ===== ===== ===== START 高光反射 START ===== ===== ===== ===== ===== */
 
 #if !defined(_SRP_BATCHING)
 CBUFFER_START(UnityReflectionProbes)
@@ -226,11 +281,11 @@ TEXTURECUBE(unity_SpecCube1);
 float3 BoxProjection(float3 direction, float3 position, float4 cubemapPosition, float4 boxMin, float4 boxMax)
 {
 	UNITY_BRANCH // 如果if表达式为假，则不执行if中的语句。GLES2和不可识别的平台上被定义为空，则不论表达式的结果是什么，都会执行所有分支的语句。
-		if (cubemapPosition.w > 0) {
-			float3 factors = ((direction > 0 ? boxMax.xyz : boxMin.xyz) - position) / direction;
-			float scalar = min(min(factors.x, factors.y), factors.z);
-			direction = direction * scalar + (position - cubemapPosition.xyz);
-		}
+	if (cubemapPosition.w > 0) {
+		float3 factors = ((direction > 0 ? boxMax.xyz : boxMin.xyz) - position) / direction;
+		float scalar = min(min(factors.x, factors.y), factors.z);
+		direction = direction * scalar + (position - cubemapPosition.xyz);
+	}
 	return direction;
 }
 #endif
@@ -261,9 +316,17 @@ float3 SampleEnvironment(LitSurface s)
 	return color;
 }
 
-/* ===== ===== ===== ===== ===== ===== END   高光反射   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END 高光反射 END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== START GPU INSTANCING START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START GPU INSTANCING START ===== ===== ===== ===== ===== */
+
+// INSTANCING 也可以与 烘培阴影（unity_ProbesOcclusion）一起使用，
+// 但是需要我们在导入 UnityInstancing.hlsl 之前，手动定义好 SHADOWS_SHADOWMASK 宏。
+#if !defined(LIGHTMAP_ON)
+	#if defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK) || defined(_SUBTRACTIVE_LIGHTING)
+		#define SHADOWS_SHADOWMASK
+	#endif
+#endif
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl" 
 
@@ -276,9 +339,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 UNITY_INSTANCING_BUFFER_END(PerInstance)
 #endif
 
-/* ===== ===== ===== ===== ===== ===== END   GPU INSTANCING   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END GPU INSTANCING END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== START （顶点/片段）数据结构 START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START （顶点/片段）数据结构 START ===== ===== ===== ===== ===== */
 
 struct VertexInput
 {
@@ -306,9 +369,9 @@ struct VertexOutput
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-/* ===== ===== ===== ===== ===== ===== END   （顶点/片段）数据结构   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END （顶点/片段）数据结构 END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== START 光照（贴图/探针） START ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START 光照（贴图/探针） START ===== ===== ===== ===== ===== */
 
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
@@ -351,7 +414,7 @@ float3 SampleLightProbes (LitSurface s)
 			s.position, s.normal, unity_ProbeVolumeWorldToObject,
 			unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
 			unity_ProbeVolumeMin, unity_ProbeVolumeSizeInv
-			);
+		);
 	}
 	else {
 		float4 coefficients[7];
@@ -366,10 +429,26 @@ float3 SampleLightProbes (LitSurface s)
 	}
 }
 
+float3 SubtractiveLighting(LitSurface s, float3 bakedLighting)
+{
+	float3 lightColor = _VisibleLightColors[0].rgb;
+	float3 lightDirection = _VisibleLightDirectionsOrPositions[0].xyz;
+	float3 diffuse = lightColor * saturate(dot(lightDirection, s.normal));
+	float shadowAttenuation = saturate(CascadedShadowAttenuation(s.position, false) + RealtimeToBakedShadowsInterpolator(s.position));
+	float3 shadowedLightingGuess = diffuse * (1.0 - shadowAttenuation);
+	float3 subtractedLighting = bakedLighting - shadowedLightingGuess;
+	subtractedLighting = max(subtractedLighting, _SubtractiveShadowColor.rgb);
+	subtractedLighting = lerp(bakedLighting, subtractedLighting, _CascadedShadowStrength);
+	return min(bakedLighting, subtractedLighting);
+}
+
 float3 GlobalIllumination (VertexOutput input, LitSurface surface)
 {
 #if defined(LIGHTMAP_ON)
 	float3 gi = SampleLightmap(input.lightmapUV);
+	#if defined(_SUBTRACTIVE_LIGHTING)
+		gi = SubtractiveLighting(surface, gi);
+	#endif
 	#if defined(DYNAMICLIGHTMAP_ON)
 		gi += SampleDynamicLightmap(input.dynamicLightmapUV);
 	#endif
@@ -381,9 +460,37 @@ float3 GlobalIllumination (VertexOutput input, LitSurface surface)
 #endif
 }
 
-/* ===== ===== ===== ===== ===== ===== END   光照（贴图/探针）   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END 光照（贴图/探针） END ===== ===== ===== ===== ===== */
 
-/* ===== ===== ===== ===== ===== ===== END   （顶点/片段）着色   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== START 烘培阴影 START ===== ===== ===== ===== ===== */
+
+TEXTURE2D(unity_ShadowMask);
+SAMPLER(samplerunity_ShadowMask);
+
+float4 BakedShadows (VertexOutput input, LitSurface surface) 
+{
+	float4 baked = 1.0;
+#if defined(LIGHTMAP_ON)
+	#if defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK)
+		baked = SAMPLE_TEXTURE2D(unity_ShadowMask, samplerunity_ShadowMask, input.lightmapUV);
+	#endif
+#elif defined(_SHADOWMASK) || defined(_DISTANCE_SHADOWMASK) || defined(_SUBTRACTIVE_LIGHTING)
+	if (unity_ProbeVolumeParams.x) {
+		baked = SampleProbeOcclusion(
+			TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+			surface.position, unity_ProbeVolumeWorldToObject,
+			unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
+			unity_ProbeVolumeMin, unity_ProbeVolumeSizeInv
+		);
+	}
+	baked = unity_ProbesOcclusion;
+#endif
+	return baked;
+}
+
+/* ===== ===== ===== ===== ===== END 烘培阴影 END ===== ===== ===== ===== ===== */
+
+/* ===== ===== ===== ===== ===== START （顶点/片段）着色 START ===== ===== ===== ===== ===== */
 
 VertexOutput LitPassVertex (VertexInput input)
 {
@@ -434,13 +541,18 @@ float4 LitPassFragment (VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_
 	PremultiplyAlpha(surface, albedoAlpha.a); // 预乘alpha，使玻璃、水等几乎完全透明的材质，仍然可以支持镜面高光。
 #endif
 
+	float4 bakedShadows = BakedShadows(input, surface); // 检索烘培阴影。
+
 	float3 color = input.vertexLighting * surface.diffuse; // diffuse == albedoAlpha.rgb 即 _Color + _MainTex 的颜色值。
 #if defined(_CASCADED_SHADOWS_HARD) || defined(_CASCADED_SHADOWS_SOFT)
-	color += MainLight(surface);
+	#if !(defined(LIGHTMAP_ON) && defined(_SUBTRACTIVE_LIGHTING)) // Subtractive 模式下，主灯光将完全烘培，不需要实时光照。
+		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(CascadedShadowAttenuation(surface.position), bakedShadows, 0, surface.position, true);
+		color += MainLight(surface, shadowAttenuation);
+	#endif
 #endif
 	for (int i = 0; i < min(unity_LightData.y, 4); i++) { // unity_LightIndices[0] 只能存储4个值。
 		int lightIndex = unity_LightIndices[0][i];
-		float shadowAttenuation = ShadowAttenuation(lightIndex, input.worldPos);
+		float shadowAttenuation = MixRealtimeAndBakedShadowAttenuation(ShadowAttenuation(lightIndex, surface.position), bakedShadows, lightIndex, surface.position);
 		color += GenericLight(lightIndex, surface, shadowAttenuation);
 	}
 
@@ -455,6 +567,6 @@ float4 LitPassFragment (VertexOutput input, FRONT_FACE_TYPE isFrontFace : FRONT_
 	return float4(color, albedoAlpha.a);
 }
 
-/* ===== ===== ===== ===== ===== ===== END   （顶点/片段）着色   END ===== ===== ===== ===== ===== ===== */
+/* ===== ===== ===== ===== ===== END （顶点/片段）着色 END ===== ===== ===== ===== ===== */
 
 #endif // EASYRP_LIT_INCLUDED
