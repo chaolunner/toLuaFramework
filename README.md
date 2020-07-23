@@ -119,7 +119,7 @@ Build版本toLua报错？
     </VirtualHost>
     ```
 
-  - 打开 Addressables->Profiles，新建一个 Profile 命名为 XAMPP，并将 RemoteLoadPath 设置为 http://chaolunner.toluaframework.com/[BuildTarget]
+  - 打开 Addressables->Profiles，新建一个 Profile 命名为 XAMPP，并将 RemoteLoadPath 设置为 `http://chaolunner.toluaframework.com/[BuildTarget]`
   - 打开 Addressables->Groups，将 Profile 切换为 XAMPP，并做一次 Build，将打包出来的文件夹（默认是项目根目录下的 ServerData 文件夹）复制到 htdocs 文件夹下，并重命名为 chaolunner.toluaframework.com
 
   题外话：XAMPP会占用Serial Port端口，导致Arduino IDE之类的软件无法正常上传脚本。
